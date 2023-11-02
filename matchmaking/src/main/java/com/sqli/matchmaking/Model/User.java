@@ -1,4 +1,4 @@
-package com.sqli.matchmaking.user;
+package com.sqli.matchmaking.Model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
