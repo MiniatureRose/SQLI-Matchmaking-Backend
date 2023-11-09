@@ -13,6 +13,8 @@ public class Matchs {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     private String name;
+    // @Column(value='numbers_of_players');
+    // private Integer numbersOfPlayers;
     private Integer numbers_of_players;
     private String location;
     private Integer organizer_id;
