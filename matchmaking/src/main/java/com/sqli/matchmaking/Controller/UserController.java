@@ -1,7 +1,10 @@
-package com.sqli.matchmaking.user;
+package com.sqli.matchmaking.Controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import com.sqli.matchmaking.Model.User;
+import com.sqli.matchmaking.Repository.UserRepository;
 
 import java.util.List;
 
@@ -9,7 +12,7 @@ import java.util.List;
 @RequestMapping("/users")
 public class UserController {
     private final UserRepository userRepository;
-
+    
     @Autowired
     public UserController(UserRepository userRepository) {
         this.userRepository = userRepository;
