@@ -2,6 +2,9 @@ package com.sqli.matchmaking.user;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import com.sqli.matchmaking.Repository.UserRepository;
+import com.sqli.matchmaking.Model.User;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -45,7 +48,7 @@ public class AuthController {
         } catch (AuthenticationException e) {
             String errorMessage = "Authentication failed";
             Response response = new Response(false, errorMessage);
-            return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>(response, HttpStatus.OK);
         }
     }
 
@@ -54,7 +57,8 @@ public class AuthController {
 
         // add check for email exists in DB
         if(UserRepository.existsByEmail(signUpDto.getEmail())){
-            return new ResponseEntity<>("Email is already taken!", HttpStatus.BAD_REQUEST);
+            Response response = new Response(true, "Email is already taken!");
+            return new ResponseEntity<>(response, HttpStatus.OK);
         }
 
         // create user object
@@ -67,8 +71,8 @@ public class AuthController {
         user.setRole("user");
 
         UserRepository.save(user);
-
-        return new ResponseEntity<>("User registered successfully", HttpStatus.OK);
+        Response response = new Response(true, "User registered successfully");
+        return new ResponseEntity<>(response, HttpStatus.OK);
 
     }
 

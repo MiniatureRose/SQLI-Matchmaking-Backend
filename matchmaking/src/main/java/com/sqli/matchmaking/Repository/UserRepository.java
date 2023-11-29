@@ -11,8 +11,4 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     Optional<User> findByEmail(String email);
     void deleteById(Integer id);
     Boolean existsByEmail(String email);
-<<<<<<< HEAD:matchmaking/src/main/java/com/sqli/matchmaking/user/UserRepository.java
 }
-=======
-}
->>>>>>> 4ae5697545737fdd2afdc34ae164d9289b921967:matchmaking/src/main/java/com/sqli/matchmaking/Repository/UserRepository.java
