@@ -1,9 +1,11 @@
-package com.sqli.DTO;
+package com.sqli.matchmaking.request.auth;
 
 import lombok.Data;
 
 @Data
-public class LoginDto {
+public class LoginRequest {
+
     private String email;
     private String password;
+    
 }
