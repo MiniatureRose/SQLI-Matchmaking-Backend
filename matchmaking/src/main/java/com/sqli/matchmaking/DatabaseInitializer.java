@@ -9,14 +9,9 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
 import com.sqli.matchmaking.model.*;
-import com.sqli.matchmaking.model.composite.FieldSport;
-import com.sqli.matchmaking.model.composite.Match;
+import com.sqli.matchmaking.model.composite.*;
 import com.sqli.matchmaking.repository.*;
-import com.sqli.matchmaking.repository.composite.FieldSportRepository;
-import com.sqli.matchmaking.repository.composite.MatchUserRepository;
-import com.sqli.matchmaking.repository.composite.TeamRepository;
-import com.sqli.matchmaking.repository.composite.MatchRepository;
-import com.sqli.matchmaking.repository.composite.TeamUserRepository;
+import com.sqli.matchmaking.repository.composite.*;
 
 import lombok.RequiredArgsConstructor;
 
@@ -50,6 +45,8 @@ public class DatabaseInitializer implements ApplicationRunner {
         insertUsers();
         insertFieldsAndSports();
         insertMatchs();
+        insertTeams();
+        insertTeamMatchUsers();
         System.out.println("Data has been successfully inserted");
     }
 
@@ -144,6 +141,86 @@ public class DatabaseInitializer implements ApplicationRunner {
                 .build()
         ));
         
+    }
+
+
+    private final void insertTeams() {
+
+        Match lhaya = matchRepository.findMatchByName("match dial l7aya").get(0);
+        Match lhobl = matchRepository.findMatchByName("match dial lhobl").get(0);
+        
+
+        teamRepository.saveAll(Arrays.asList(
+            Team.builder().name("lhayaA")
+            .match(lhaya)
+            .build(),
+            Team.builder().name("lhayaB")
+            .match(lhaya)
+            .build(),
+            Team.builder().name("lhoblA")
+            .match(lhobl)
+            .build(),
+            Team.builder().name("lhoblB")
+            .match(lhobl)
+            .build()
+        ));
+    }
+
+
+    private final void insertTeamMatchUsers() {
+        
+        Team lhayaA = teamRepository.findTeamByName("lhayaA").get(0);
+        Team lhoblA = teamRepository.findTeamByName("lhoblA").get(0);
+        Team lhayaB = teamRepository.findTeamByName("lhayaB").get(0);
+        Team lhoblB = teamRepository.findTeamByName("lhoblB").get(0);
+
+        User alice = userRepository.findByEmail("alice@example.com").get();
+        User bob = userRepository.findByEmail("bob@example.com").get();
+        User eve = userRepository.findByEmail("eve@example.com").get();
+        User john = userRepository.findByEmail("john@example.com").get();
+
+        Match lhaya = matchRepository.findMatchByName("match dial l7aya").get(0);
+        Match lhobl = matchRepository.findMatchByName("match dial lhobl").get(0);
+
+
+        matchUserRepository.saveAll(Arrays.asList(
+            MatchUser.builder()
+            .match(lhaya)
+            .user(alice)
+            .build(),
+            MatchUser.builder()
+            .match(lhaya)
+            .user(bob)
+            .build(),
+            MatchUser.builder()
+            .match(lhobl)
+            .user(eve)
+            .build(),
+            MatchUser.builder()
+            .match(lhobl)
+            .user(john)
+            .build()
+        ));
+
+        // user cannot join any team
+        teamUserRepository.saveAll(Arrays.asList(
+            TeamUser.builder()
+            .team(lhayaA)
+            .user(alice)
+            .build(),
+            TeamUser.builder()
+            .team(lhayaB)
+            .user(bob)
+            .build(),
+            TeamUser.builder()
+            .team(lhoblA)
+            .user(eve)
+            .build(),
+            TeamUser.builder()
+            .team(lhoblB)
+            .user(john)
+            .build()
+        ));
     }
 
 }

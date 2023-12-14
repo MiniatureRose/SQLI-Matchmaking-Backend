@@ -11,6 +11,7 @@ import com.sqli.matchmaking.service.*;
 import com.sqli.matchmaking.service.composite.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/data")
@@ -27,6 +28,9 @@ public class DataController {
 
     @Autowired
     private FieldService fieldService;
+
+    @Autowired
+    private TeamService teamService;
     
     /* 
      * user
@@ -37,13 +41,80 @@ public class DataController {
     }
 
     @GetMapping("user/{id}")
-    public User getUserById(@PathVariable Long id) {
-        return userService.getById(id);
+    public ResponseEntity<User> getUserById(@PathVariable Long id) {
+        User el = userService.getById(id);
+        if (el == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return ResponseEntity.ok(el);
     }
 
     @DeleteMapping("user/{id}")
-    public void deleteUserById(@PathVariable Long id) {
+    public ResponseEntity<Object> deleteUserById(@PathVariable Long id) {
+        User el = userService.getById(id);
+        if (el == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("message", "user does not exist"));
+        }
         userService.deleteById(id);
+        return ResponseEntity.ok().body(Map.of("message", "User deleted successfully!"));
+    }
+
+    /* 
+     * field
+     */
+    @GetMapping("/allfields")
+    public List<Field> getAllFields() {
+        return fieldService.getAll();
+    }
+
+    @GetMapping("field/{id}")
+    public ResponseEntity<Field> getFieldById(@PathVariable Long id) {
+        Field el = fieldService.getById(id);
+        if (el == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return ResponseEntity.ok(el);
+    }
+
+    @DeleteMapping("field/{id}")
+    public ResponseEntity<Object> deleteFieldById(@PathVariable Long id) {
+        Field el = fieldService.getById(id);
+        if (el == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("message", "Field does not exist"));
+        }
+        fieldService.deleteById(id);
+        return ResponseEntity.ok().body(Map.of("message", "Field deleted successfully!"));
+    }
+
+
+    /* 
+     * sport
+     */
+    @GetMapping("/allsports")
+    public List<Sport> getAllSports() {
+        return sportService.getAll();
+    }
+
+    @GetMapping("sport/{id}")
+    public ResponseEntity<Sport> getSportById(@PathVariable Long id) {
+        Sport el = sportService.getById(id);
+        if (el == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return ResponseEntity.ok(el);
+    }
+
+    @DeleteMapping("sport/{id}")
+    public ResponseEntity<Object> deleteSportById(@PathVariable Long id) {
+        Sport el = sportService.getById(id);
+        if (el == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("message", "Sport does not exist"));
+        }
+        sportService.deleteById(id);
+        return ResponseEntity.ok().body(Map.of("message", "Sport deleted successfully!"));
     }
 
     /* 
@@ -103,7 +174,43 @@ public class DataController {
     }
     
     @DeleteMapping("match/{id}")
-    public void deleteMatchById(@PathVariable Long id) {
+    public ResponseEntity<Object> deleteMatchById(@PathVariable Long id) {
+        Match el = matchService.getById(id);
+        if (el == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("message", "match does not exist"));
+        }
         matchService.deleteById(id);
+        return ResponseEntity.ok().body(Map.of("message", "Match deleted successfully!"));
     }
+
+
+    /* 
+     * team
+     */
+    @GetMapping("/allteams")
+    public List<Team> getAllTeams() {
+        return teamService.getAll();
+    }
+
+    @GetMapping("team/{id}")
+    public ResponseEntity<Team> getTeamById(@PathVariable Long id) {
+        Team el = teamService.getById(id);
+        if (el == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return ResponseEntity.ok(el);
+    }
+
+    @DeleteMapping("team/{id}")
+    public ResponseEntity<Object> deleteTeamById(@PathVariable Long id) {
+        Team el = teamService.getById(id);
+        if (el == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("message", "Team does not exist"));
+        }
+        teamService.deleteById(id);
+        return ResponseEntity.ok().body(Map.of("message", "Team deleted successfully!"));
+    }
+    
 }

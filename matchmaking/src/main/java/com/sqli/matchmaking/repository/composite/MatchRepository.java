@@ -15,6 +15,7 @@ import com.sqli.matchmaking.model.composite.Match;
 @Repository
 public interface MatchRepository extends JpaRepository<Match, Long> {
     
+    List<Match> findMatchByName(String name); // filter by name
     List<Match> findMatchBySport(Sport sport); // filter by sport
     List<Match> findMatchByField(Field field); // filter by field
     List<Match> findMatchByDate(Instant date); // filter by instant
