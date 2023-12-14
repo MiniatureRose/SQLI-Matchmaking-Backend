@@ -33,16 +33,15 @@ public class SecurityConfig {
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests((authorize) ->
-                        authorize.requestMatchers(HttpMethod.GET, "/**").permitAll()
-                                .requestMatchers(HttpMethod.POST, "/**").permitAll()
-                                .requestMatchers(HttpMethod.PUT, "/**").permitAll()
-                                .requestMatchers("/auth/**").permitAll()
-                                .anyRequest().authenticated()
-                )
+        http
+                .csrf(csrf -> csrf.disable()) // Disabling CSRF protection
+                .authorizeHttpRequests(authorize -> authorize
+                        .anyRequest().permitAll()) // Permit all requests from any endpoint
                 .userDetailsService(userDetailsService); // Set the custom userDetailsService
-            ////.formLogin(withDefaults()); // Assuming you want to enable form login
+
+        // You can remove or comment out the formLogin line if you don't need form-based
+        // authentication
+        //// .formLogin(withDefaults());
 
         return http.build();
     }
