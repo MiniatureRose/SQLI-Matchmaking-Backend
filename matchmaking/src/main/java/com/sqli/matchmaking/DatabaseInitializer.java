@@ -13,6 +13,8 @@ import com.sqli.matchmaking.model.composite.*;
 import com.sqli.matchmaking.repository.*;
 import com.sqli.matchmaking.repository.composite.*;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import lombok.RequiredArgsConstructor;
 
 @Component
@@ -29,7 +31,7 @@ public class DatabaseInitializer implements ApplicationRunner {
     private final FieldSportRepository fieldSportsRepository;
 
     @Override
-    public void run(ApplicationArguments args) {
+    public void run(ApplicationArguments args) throws Exception {
         
         teamUserRepository.deleteAll();
         matchUserRepository.deleteAll();
@@ -77,7 +79,13 @@ public class DatabaseInitializer implements ApplicationRunner {
     }
 
 
-    private final void insertUsers() {
+    private final void insertUsers() throws Exception {
+
+        String root = System.getProperty("user.dir");
+        Path defaultImagePath = Paths.get(root, "src", "main", "java", "com", "sqli", "matchmaking");
+        String defaultImageFileName = "freddie.jpg";
+        String defaultImageUrl = Paths.get(defaultImagePath.toString(), defaultImageFileName).toString();
+        ////byte[] defaultImageByte = User.getImageBytes(defaultImageUrl);
 
         userRepository.saveAll(Arrays.asList(
             User.builder().firstName("John")
@@ -85,6 +93,7 @@ public class DatabaseInitializer implements ApplicationRunner {
                             .email("john@example.com")
                             .password("password123")
                             .phone("+337698895")
+                            .profileImage(defaultImageUrl)
                             .role("USER")
                             .build(),
             User.builder().firstName("Alice")
@@ -92,6 +101,7 @@ public class DatabaseInitializer implements ApplicationRunner {
                             .email("alice@example.com")
                             .password("password456")
                             .phone("+337698895")
+                            .profileImage(defaultImageUrl)
                             .role("ADMIN")
                             .build(),
             User.builder().firstName("Bob")
@@ -99,6 +109,7 @@ public class DatabaseInitializer implements ApplicationRunner {
                             .email("bob@example.com")
                             .password("password789")
                             .phone("+337698895")
+                            .profileImage(defaultImageUrl)
                             .role("USER")
                             .build(),
             User.builder().firstName("Eve")
@@ -106,6 +117,7 @@ public class DatabaseInitializer implements ApplicationRunner {
                             .email("eve@example.com")
                             .password("passwordabc")
                             .phone("+337698895")
+                            .profileImage(defaultImageUrl)
                             .role("USER")
                             .build()
         ));

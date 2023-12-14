@@ -33,7 +33,7 @@ public class UserService {
 
     public boolean emailAlreadyExists(String email) {
         User find = userRepository.findByEmail(email).orElse(null);
-        return find == null;
+        return find != null;
     }
 
 }

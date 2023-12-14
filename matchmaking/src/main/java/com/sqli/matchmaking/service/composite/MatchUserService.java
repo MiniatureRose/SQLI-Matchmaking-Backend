@@ -1,11 +1,12 @@
 package com.sqli.matchmaking.service.composite;
 
-import java.time.Instant;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.sqli.matchmaking.model.Field;
+import com.sqli.matchmaking.model.Sport;
 import com.sqli.matchmaking.model.User;
 import com.sqli.matchmaking.model.composite.Match;
 import com.sqli.matchmaking.model.composite.MatchUser;
@@ -15,34 +16,31 @@ import com.sqli.matchmaking.repository.composite.MatchUserRepository;
 public class MatchUserService {
 
     @Autowired
-    private MatchUserRepository mtpRepository;
+    private MatchUserRepository matchUserRepository;
 
 
     /* 
-     * user
+     * user -> match
      */
-    private List<Match> getUserMatchs(User user) {
-        return mtpRepository.findMatchByUser(user);
+    public List<Match> getUserMatches(User user) {
+        return matchUserRepository.findMatchByUser(user);
     }
 
-    public List<Match> getUserPassedMatchs(User user) {
-        List<Match> all = getUserMatchs(user);
-        all.removeIf(match -> match.getDate().isAfter(Instant.now()));
+    public List<Match> getUserMatchesBySport(User user, Sport sport) {
+        List<Match> all = matchUserRepository.findMatchByUserAndSport(user, sport);
         return all;
     }
-    
-    public List<Match> getUserComingMatchs(User user) {
-        List<Match> all = getUserMatchs(user);
-        all.removeIf(match -> match.getDate().isBefore(Instant.now()));
+
+    public List<Match> getUserMatchesByField(User user, Field field) {
+        List<Match> all = matchUserRepository.findMatchByUserAndField(user, field);
         return all;
     }
 
     /* 
-     * match
+     * match -> user
      */
-
     public List<User> getMatchPlayers(Match match) {
-        return mtpRepository.findUsersByMatch(match);
+        return matchUserRepository.findUsersByMatch(match);
     }
 
     public Integer getMatchRemainingPlayers(Match match) {
@@ -55,21 +53,19 @@ public class MatchUserService {
         return getMatchRemainingPlayers(match) == 0;
     }
 
-
-    public List<MatchUser> getAll() {
-        return mtpRepository.findAll();
-    }
-
+    /* 
+     * basic 
+     */
     public MatchUser getById(Long id) {
-        return mtpRepository.findById(id).orElse(null);
+        return matchUserRepository.findById(id).orElse(null);
     }
 
     public void save(MatchUser el) {
-        mtpRepository.save(el);
+        matchUserRepository.save(el);
     }
 
     public void deleteById(Long id) {
-        mtpRepository.deleteById(id);
+        matchUserRepository.deleteById(id);
     }
 
 

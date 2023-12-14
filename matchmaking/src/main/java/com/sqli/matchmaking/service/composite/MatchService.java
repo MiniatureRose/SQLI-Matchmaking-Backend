@@ -19,56 +19,41 @@ public class MatchService {
     @Autowired
     private MatchRepository matchRepository;
 
-    public List<Match> getPassedMatchs() {
-        List<Match> all = new ArrayList<>(getAll());
+    public void filterPassedMatches(List<Match> all) {
         all.removeIf(match -> match.getDate().isAfter(Instant.now()));
-        return all;
     }
 
-    public List<Match> getComingMatchs() {
-        List<Match> all = new ArrayList<>(getAll());
+    public void filterComingMatches(List<Match> all) {
         all.removeIf(match -> match.getDate().isBefore(Instant.now()));
+    }
+
+    /* 
+     * filtering
+     */
+    public List<Match> getMatches() {
+        List<Match> all = new ArrayList<>(matchRepository.findAll());
         return all;
     }
 
-    public List<Match> FilterPassedMatchsBySport(Sport sport) {
+    public List<Match> getMatchesBySport(Sport sport) {
         List<Match> all = matchRepository.findMatchBySport(sport);
-        all.removeIf(match -> match.getDate().isAfter(Instant.now()));
         return all;
     }
 
-    public List<Match> FilterComingMatchsBySport(Sport sport) {
-        List<Match> all = matchRepository.findMatchBySport(sport);
-        all.removeIf(match -> match.getDate().isBefore(Instant.now()));
-        return all;
-    }
-
-    public List<Match> FilterPassedMatchsByField(Field field) {
+    public List<Match> getMatchesByField(Field field) {
         List<Match> all = matchRepository.findMatchByField(field);
-        all.removeIf(match -> match.getDate().isAfter(Instant.now()));
         return all;
     }
 
-    public List<Match> FilterComingMatchsByField(Field field) {
-        List<Match> all = matchRepository.findMatchByField(field);
-        all.removeIf(match -> match.getDate().isBefore(Instant.now()));
-        return all;
-    }
-
-    public List<Match> FilterPassedMatchsByDay(Instant date) {
+    public List<Match> getMatchesByDay(Instant date) {
         List<Match> all = matchRepository.findMatchByDay(date);
         all.removeIf(match -> match.getDate().isAfter(Instant.now()));
-        return all;
-    }
-
-    public List<Match> FilterComingMatchsByDay(Instant date) {
-        List<Match> all = matchRepository.findMatchByDay(date);
-        all.removeIf(match -> match.getDate().isBefore(Instant.now()));
         return all;
     }
 
     public boolean isFieldAlreadyBooked(Field field, Instant start, Duration duration) {
-        List<Match> set = new ArrayList<>(FilterComingMatchsByField(field));
+        List<Match> set = new ArrayList<>(getMatchesByField(field));
+        filterComingMatches(set);
         Instant end = start.plus(duration);
         return set.removeIf(match -> {
                 var startMatch = match.getDate();
@@ -77,10 +62,10 @@ public class MatchService {
                 });
     }
 
-    public List<Match> getAll() {
-        return matchRepository.findAll();
-    }
 
+    /* 
+     * basic 
+     */
     public Match getById(Long id) {
         return matchRepository.findById(id).orElse(null);
     }

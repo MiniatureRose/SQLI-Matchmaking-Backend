@@ -12,8 +12,10 @@ import com.sqli.matchmaking.service.composite.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:4200")
 @RequestMapping("/data")
 public class DataController {
 
@@ -31,11 +33,14 @@ public class DataController {
 
     @Autowired
     private TeamService teamService;
+
+    @Autowired
+    private MatchUserService matchUserService;
     
     /* 
      * user
      */
-    @GetMapping("/allusers")
+    @GetMapping("/user/all")
     public List<User> getAllUsers() {
         return userService.getAll();
     }
@@ -63,7 +68,7 @@ public class DataController {
     /* 
      * field
      */
-    @GetMapping("/allfields")
+    @GetMapping("/field/all")
     public List<Field> getAllFields() {
         return fieldService.getAll();
     }
@@ -92,7 +97,7 @@ public class DataController {
     /* 
      * sport
      */
-    @GetMapping("/allsports")
+    @GetMapping("/sport/all")
     public List<Sport> getAllSports() {
         return sportService.getAll();
     }
@@ -120,58 +125,58 @@ public class DataController {
     /* 
      * match
      */
-    @GetMapping("/match/all")
-    public ResponseEntity<List<Match>> getAllMatchs() {
-        return ResponseEntity.ok(matchService.getAll());
+    @GetMapping("/match")
+    public ResponseEntity<List<Match>> getMatches(
+            @RequestParam("type") String type,
+            @RequestParam(value = "id", required = false) Long id,
+            @RequestParam(value = "filter", required = false) String filter) {
+
+        if (!isValidTime(type)) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        if (filter == null && id == null) {
+            List<Match> all = matchService.getMatches();
+            filterByTime(all, type);
+            return ResponseEntity.ok(all);
+        }
+
+        if (filter != null && id != null) {
+            List<Match> all = null;
+            switch (filter) {
+                case "sport":
+                    Sport sport = sportService.getById(id);
+                    if (sport == null) 
+                        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+                    all = matchService.getMatchesBySport(sport);
+                    break;
+                case "field":
+                    Field field = fieldService.getById(id);
+                    if (field == null) 
+                        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+                    all = matchService.getMatchesByField(field);
+                    break;
+                default:
+                    return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            }
+            filterByTime(all, type);
+            return ResponseEntity.ok(all);
+        }
+
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+
     }
 
-    @GetMapping("/match/passed")
-    public ResponseEntity<List<Match>> getPassedMatchs() {
-        return ResponseEntity.ok(matchService.getPassedMatchs());
-    }
-
-    @GetMapping("/match/coming")
-    public ResponseEntity<List<Match>> getComingMatchs() {
-        return ResponseEntity.ok(matchService.getComingMatchs());
-    }
-
-    @GetMapping("/match/passed/sport/{id}")
-    public ResponseEntity<List<Match>> filterPassedMatchBySport(@PathVariable Long id) {
-        Sport el = sportService.getById(id);
-        if (el == null)
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        return ResponseEntity.ok(matchService.FilterPassedMatchsBySport(el));
-    }
-
-    @GetMapping("/match/coming/sport/{id}")
-    public ResponseEntity<List<Match>> filterComingMatchBySport(@PathVariable Long id) {
-        Sport el = sportService.getById(id);
-        if (el == null)
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        return ResponseEntity.ok(matchService.FilterComingMatchsBySport(el));
-    }
-
-    @GetMapping("/match/passed/field/{id}")
-    public ResponseEntity<List<Match>> filterPassedMatchByField(@PathVariable Long id) {
-        Field el = fieldService.getById(id);
-        if (el == null)
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        return ResponseEntity.ok(matchService.FilterPassedMatchsByField(el));
-    }
-
-    @GetMapping("/match/coming/field/{id}")
-    public ResponseEntity<List<Match>> filterComingMatchByField(@PathVariable Long id) {
-        Field el = fieldService.getById(id);
-        if (el == null)
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        return ResponseEntity.ok(matchService.FilterComingMatchsByField(el));
-    }
 
     @GetMapping("match/{id}")
     public ResponseEntity<Match> getMatchById(@PathVariable Long id) {
         Match el = matchService.getById(id);
-        return el == null ? new ResponseEntity<>(HttpStatus.NOT_FOUND) : ResponseEntity.ok(el);
+        if (el == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return ResponseEntity.ok(el);
     }
+
     
     @DeleteMapping("match/{id}")
     public ResponseEntity<Object> deleteMatchById(@PathVariable Long id) {
@@ -184,11 +189,26 @@ public class DataController {
         return ResponseEntity.ok().body(Map.of("message", "Match deleted successfully!"));
     }
 
+    private void filterByTime(List<Match> all, String time) {
+        switch (time) {
+            case "passed":
+                matchService.filterPassedMatches(all);
+                break;
+            case "coming":
+                matchService.filterComingMatches(all);
+                break;
+            default:
+        }
+    }
+
+    private boolean isValidTime(String time) {
+        return Set.of("passed", "coming", "all").contains(time);
+    }
 
     /* 
      * team
      */
-    @GetMapping("/allteams")
+    @GetMapping("/team/all")
     public List<Team> getAllTeams() {
         return teamService.getAll();
     }
@@ -210,6 +230,78 @@ public class DataController {
                 .body(Map.of("message", "Team does not exist"));
         }
         teamService.deleteById(id);
+        return ResponseEntity.ok().body(Map.of("message", "Team deleted successfully!"));
+    }
+
+    /* 
+     * matchuser
+     */
+    @GetMapping("/matchuser")
+    public ResponseEntity<List<Match>> getUserMatches(
+            @RequestParam("type") String type,
+            @RequestParam("user") Long userId,
+            @RequestParam(value = "id", required = false) Long id,
+            @RequestParam(value = "filter", required = false) String filter) {
+
+        if (!isValidTime(type)) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        User user = userService.getById(userId);
+        if (user == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        if (filter == null && id == null) {
+            List<Match> all = matchUserService.getUserMatches(user);
+            filterByTime(all, type);
+            return ResponseEntity.ok(all);
+        }
+
+        if (filter != null && id != null) {
+            List<Match> all = null;
+            switch (filter) {
+                case "sport":
+                    Sport sport = sportService.getById(id);
+                    if (sport == null) 
+                        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+                    all = matchUserService.getUserMatchesBySport(user, sport);
+                    break;
+                case "field":
+                    Field field = fieldService.getById(id);
+                    if (field == null) 
+                        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+                    all = matchUserService.getUserMatchesByField(user, field);
+                    break;
+                default:
+                    return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            }
+            filterByTime(all, type);
+            return ResponseEntity.ok(all);
+        }
+
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+
+    }
+
+
+    @GetMapping("/matchuser/{id}")
+    public ResponseEntity<MatchUser> getMatchUserById(@PathVariable Long id) {
+        MatchUser el = matchUserService.getById(id);
+        if (el == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        };
+        return ResponseEntity.ok(el);
+    }
+
+    @DeleteMapping("/matchuser/{id}")
+    public ResponseEntity<Object> deleteMatchUserById(@PathVariable Long id) {
+        MatchUser el = matchUserService.getById(id);
+        if (el == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("message", "Team does not exist"));
+        }
+        matchUserService.deleteById(id);
         return ResponseEntity.ok().body(Map.of("message", "Team deleted successfully!"));
     }
     

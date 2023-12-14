@@ -19,6 +19,7 @@ import com.sqli.matchmaking.service.composite.*;
 
 
 @RestController
+@CrossOrigin(origins = "http://localhost:4200")
 @RequestMapping("/create")
 public class CreateController {
 
@@ -46,6 +47,7 @@ public class CreateController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(Map.of("message", "Email already exits"));
         }
+        System.out.println("hhhhhh");
         // TODO: Check the structure
         // TODO: send email verification
         User el = User.builder()
@@ -57,6 +59,7 @@ public class CreateController {
                 .role(request.getRole())
                 .build();
         userService.save(el);
+        System.out.println("hhhhgggghh");
         return ResponseEntity.ok().body(Map.of("message", "User signed up successfully!"));
     }
 

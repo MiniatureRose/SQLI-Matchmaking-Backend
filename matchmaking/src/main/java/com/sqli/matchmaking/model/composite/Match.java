@@ -18,7 +18,7 @@ import lombok.Builder;
 @NoArgsConstructor
 @Entity
 @Data
-@Table(name = "matchs", uniqueConstraints = {
+@Table(name = "matches", uniqueConstraints = {
     @UniqueConstraint(columnNames = {"field_id", "date"})
 })
 public class Match {
