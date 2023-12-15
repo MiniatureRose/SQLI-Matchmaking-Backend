@@ -15,6 +15,10 @@ import com.sqli.matchmaking.model.composite.MatchUser;
 public interface MatchUserRepository extends JpaRepository<MatchUser, Long> {
     
     List<MatchUser> findByUser(User player);
+    
+    @Query("SELECT mu FROM MatchUser mu WHERE mu.match= :match and mu.user= :user")
+    MatchUser findMatchUserByMatchAndUser(@Param("match") Match match, @Param("user") User user );
+
 
     @Query("SELECT m.match FROM MatchUser m WHERE m.user = :player")
     List<Match> findMatchByUser(@Param("player") User player);
@@ -30,6 +34,6 @@ public interface MatchUserRepository extends JpaRepository<MatchUser, Long> {
     List<Match> findMatchByUserAndField(User player, Field field);
 
     @Query("SELECT m.user FROM MatchUser m WHERE m.match = :match")
-    List<User> findUsersByMatch(Match match); // all players within a match
+    List<User> findUsersByMatch(@Param("match") Match match); // all players within a match
 
 }
