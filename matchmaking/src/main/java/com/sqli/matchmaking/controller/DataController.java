@@ -311,7 +311,8 @@ public class DataController {
                 .body(Map.of("message", "Match or user does not exist"));
         }
 
-        matchUserService.getMatchUserByMatchAndUser(el, user);
+        MatchUser mu=matchUserService.getMatchUserByMatchAndUser(el, user);
+        matchUserService.deleteById(mu.getId());
         return ResponseEntity.ok().body(Map.of("message", "Team deleted successfully!"));
     }
 
@@ -323,7 +324,7 @@ public class DataController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         List<User> matchUsers = matchUserService.getMatchPlayers(el);
-        return ResponseEntity.ok(matchUsers);
+        return ResponseEntity.ok().body(matchUsers);
         
     }
     
