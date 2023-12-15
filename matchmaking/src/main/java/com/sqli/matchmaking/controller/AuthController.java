@@ -1,6 +1,8 @@
 package com.sqli.matchmaking.controller;
 
-import java.util.Map;
+import com.sqli.matchmaking.model.User;
+import com.sqli.matchmaking.repository.UserRepository;
+import com.sqli.matchmaking.request.auth.LoginRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.sqli.matchmaking.request.auth.LoginRequest;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
@@ -24,16 +26,28 @@ public class AuthController {
     @Autowired
     private AuthenticationManager authenticationManager;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @PostMapping("/signin")
     public ResponseEntity<Object> authenticateUser(@RequestBody LoginRequest loginDto) {
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginDto.getEmail(), loginDto.getPassword()));
             SecurityContextHolder.getContext().setAuthentication(authentication);
-            return ResponseEntity.ok().body(Map.of("message", "User signed in successfully!"));
+
+            // Find the user by email and get the ID
+            User user = userRepository.findByEmail(loginDto.getEmail())
+                    .orElseThrow(() -> new Exception("User not found"));
+
+            return ResponseEntity.ok().body(Map.of(
+                    "message", "User signed in successfully!",
+                    "userId", user.getId() // Include the user ID in the response
+            ));
         } catch (AuthenticationException e) {
-            // Handle authentication failure here, e.g., return a 401 Unauthorized response
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Authentication failed"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", e.getMessage()));
         }
     }
 }
