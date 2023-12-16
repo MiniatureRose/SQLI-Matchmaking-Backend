@@ -101,7 +101,7 @@ public class DatabaseInitializer implements ApplicationRunner {
                             .email("alice@example.com")
                             .password("password456")
                             .phone("+337698895")
-                            .profileImage(defaultImageUrl)
+                            .profileImage("/assets/Player2.svg")
                             .role("ADMIN")
                             .build(),
             User.builder().firstName("Bob")
@@ -109,7 +109,7 @@ public class DatabaseInitializer implements ApplicationRunner {
                             .email("bob@example.com")
                             .password("password789")
                             .phone("+337698895")
-                            .profileImage(defaultImageUrl)
+                            .profileImage("/assets/Player3.svg")
                             .role("USER")
                             .build(),
             User.builder().firstName("Eve")
@@ -117,9 +117,66 @@ public class DatabaseInitializer implements ApplicationRunner {
                             .email("eve@example.com")
                             .password("passwordabc")
                             .phone("+337698895")
-                            .profileImage(defaultImageUrl)
+                            .profileImage("/assets/Player4.svg")
+                            .role("USER")
+                            .build(),
+            User.builder().firstName("Mouad")
+                            .lastName("BOUMOUR")
+                            .email("mouad@example.com")
+                            .password("passwordMouad")
+                            .phone("+337698895")
+                            .profileImage("/assets/Player5.svg")
+                            .role("USER")
+                            .build(),
+            User.builder().firstName("Oussama")
+                            .lastName("Zobid")
+                            .email("oussama@example.com")
+                            .password("passwordOussama")
+                            .phone("+337698895")
+                            .profileImage("/assets/Player6.svg")
+                            .role("USER")
+                            .build(),
+            User.builder().firstName("Anas")
+                            .lastName("NAAMI")
+                            .email("anas@example.com")
+                            .password("passwordAnas")
+                            .phone("+337698895")
+                            .profileImage("/assets/Player7.svg")
+                            .role("USER")
+                            .build(),
+            User.builder().firstName("Hicham")
+                            .lastName("Nekt")
+                            .email("hicham@example.com")
+                            .password("passwordHicham")
+                            .phone("+337698895")
+                            .profileImage("/assets/Player8.svg")
+                            .role("USER")
+                            .build(),
+            User.builder().firstName("Salim")
+                            .lastName("BEKKARI")
+                            .email("salim@example.com")
+                            .password("passwordSalim")
+                            .phone("+337698895")
+                            .profileImage("/assets/Player9.svg")
+                            .role("USER")
+                            .build(),
+            User.builder().firstName("Achraf")
+                            .lastName("JDIDI")
+                            .email("achraf@example.com")
+                            .password("passwordAchraf")
+                            .phone("+337698895")
+                            .profileImage("/assets/Player10.svg")
+                            .role("USER")
+                            .build(),
+            User.builder().firstName("Ayoub")
+                            .lastName("ZIANE")
+                            .email("ayoub@example.com")
+                            .password("passwordAyoub")
+                            .phone("+337698895")
+                            .profileImage("/assets/Player1.svg")
                             .role("USER")
                             .build()
+                            
         ));
     }
 
@@ -128,6 +185,7 @@ public class DatabaseInitializer implements ApplicationRunner {
 
         User alice = userRepository.findByEmail("alice@example.com").get();
         User bob = userRepository.findByEmail("bob@example.com").get();
+        User mouad = userRepository.findByEmail("mouad@example.com").get();
         Field fb = fieldRepository.findByName("Francois Bord").get();
         Field db = fieldRepository.findByName("Doyen Bruce").get();
         Sport foot = sportRepository.findByName("football").get();
@@ -139,7 +197,7 @@ public class DatabaseInitializer implements ApplicationRunner {
                 .organizer(alice)
                 .field(fb)
                 .sport(foot)
-                .date(Instant.now())
+                .date(Instant.now().plus(Duration.ofDays(2)))
                 .duration(Duration.ofMinutes(90))
                 .noPlayers(10)
                 .build(),
@@ -147,9 +205,17 @@ public class DatabaseInitializer implements ApplicationRunner {
                 .organizer(bob)
                 .field(db)
                 .sport(basket)
-                .date(Instant.now())
+                .date(Instant.now().plus(Duration.ofDays(8)))
                 .duration(Duration.ofMinutes(48))
                 .noPlayers(10)
+            //     .build(),
+            // Match.builder().name("match dial zrguin")
+            //     .organizer(mouad)
+            //     .field(db)
+            //     .sport(foot)
+            //     .date(Instant.now())
+            //     .duration(Duration.ofMinutes(48))
+            //     .noPlayers(10)
                 .build()
         ));
         
@@ -160,6 +226,7 @@ public class DatabaseInitializer implements ApplicationRunner {
 
         Match lhaya = matchRepository.findMatchByName("match dial l7aya").get(0);
         Match lhobl = matchRepository.findMatchByName("match dial lhobl").get(0);
+        // Match zrguin = matchRepository.findMatchByName("match dial zrguin").get(0);
         
 
         teamRepository.saveAll(Arrays.asList(
@@ -174,6 +241,12 @@ public class DatabaseInitializer implements ApplicationRunner {
             .build(),
             Team.builder().name("lhoblB")
             .match(lhobl)
+            // .build(),
+            // Team.builder().name("zrguinA")
+            // .match(zrguin)
+            // .build(),
+            // Team.builder().name("zrguinB")
+            // .match(zrguin)
             .build()
         ));
     }
@@ -190,9 +263,18 @@ public class DatabaseInitializer implements ApplicationRunner {
         User bob = userRepository.findByEmail("bob@example.com").get();
         User eve = userRepository.findByEmail("eve@example.com").get();
         User john = userRepository.findByEmail("john@example.com").get();
+        User mouad = userRepository.findByEmail("mouad@example.com").get();
+        User achraf = userRepository.findByEmail("achraf@example.com").get();
+        User oussama = userRepository.findByEmail("oussama@example.com").get();
+        User hicham = userRepository.findByEmail("hicham@example.com").get();
+        User salim = userRepository.findByEmail("salim@example.com").get();
+        User anas = userRepository.findByEmail("anas@example.com").get();
+        User ayoub = userRepository.findByEmail("ayoub@example.com").get();
+
 
         Match lhaya = matchRepository.findMatchByName("match dial l7aya").get(0);
         Match lhobl = matchRepository.findMatchByName("match dial lhobl").get(0);
+        // Match zrguin = matchRepository.findMatchByName("match dial zrguin").get(0);
 
 
         matchUserRepository.saveAll(Arrays.asList(
@@ -205,12 +287,106 @@ public class DatabaseInitializer implements ApplicationRunner {
             .user(bob)
             .build(),
             MatchUser.builder()
+            .match(lhaya)
+            .user(mouad)
+            .build(),
+            MatchUser.builder()
+            .match(lhaya)
+            .user(achraf)
+            .build(),
+            MatchUser.builder()
+            .match(lhaya)
+            .user(ayoub)
+            .build(),
+            MatchUser.builder()
+            .match(lhaya)
+            .user(hicham)
+            .build(),
+            MatchUser.builder()
+            .match(lhaya)
+            .user(oussama)
+            .build(),
+            MatchUser.builder()
+            .match(lhaya)
+            .user(salim)
+            .build(),
+            MatchUser.builder()
+            .match(lhaya)
+            .user(anas)
+            .build(),
+
+            MatchUser.builder()
+            .match(lhobl)
+            .user(alice)
+            .build(),
+            // MatchUser.builder()
+            // .match(lhobl)
+            // .user(bob)
+            // .build(),
+            MatchUser.builder()
             .match(lhobl)
             .user(eve)
             .build(),
             MatchUser.builder()
             .match(lhobl)
             .user(john)
+            .build(),
+            MatchUser.builder()
+            .match(lhobl)
+            .user(achraf)
+            .build(),
+            MatchUser.builder()
+            .match(lhobl)
+            .user(ayoub)
+            .build(),
+            MatchUser.builder()
+            .match(lhobl)
+            .user(hicham)
+            .build(),
+            MatchUser.builder()
+            .match(lhobl)
+            .user(oussama)
+            .build(),
+            MatchUser.builder()
+            .match(lhobl)
+            .user(salim)
+            .build(),
+            MatchUser.builder()
+            .match(lhobl)
+            .user(anas)
+            // .build(),
+
+            // MatchUser.builder()
+            // .match(zrguin)
+            // .user(eve)
+            // .build(),
+            // MatchUser.builder()
+            // .match(zrguin)
+            // .user(john)
+            // .build(),
+            // MatchUser.builder()
+            // .match(zrguin)
+            // .user(achraf)
+            // .build(),
+            // MatchUser.builder()
+            // .match(zrguin)
+            // .user(ayoub)
+            // .build(),
+            // MatchUser.builder()
+            // .match(zrguin)
+            // .user(hicham)
+            // .build(),
+            // MatchUser.builder()
+            // .match(zrguin)
+            // .user(oussama)
+            // .build(),
+            // MatchUser.builder()
+            // .match(zrguin)
+            // .user(salim)
+            // .build(),
+            // MatchUser.builder()
+            // .match(zrguin)
+            // .user(anas)
             .build()
         ));
 
