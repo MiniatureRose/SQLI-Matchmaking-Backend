@@ -10,6 +10,7 @@ import com.sqli.matchmaking.model.composite.*;
 import com.sqli.matchmaking.service.*;
 import com.sqli.matchmaking.service.composite.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -33,6 +34,9 @@ public class DataController {
 
     @Autowired
     private TeamService teamService;
+
+    @Autowired
+    private TeamUserService teamUserService;
 
     @Autowired
     private MatchUserService matchUserService;
@@ -294,15 +298,35 @@ public class DataController {
         return ResponseEntity.ok(el);
     }
 
-    @DeleteMapping("/matchuser/{id}")
-    public ResponseEntity<Object> deleteMatchUserById(@PathVariable Long id) {
-        MatchUser el = matchUserService.getById(id);
-        if (el == null) {
+    @DeleteMapping("/matchuser")
+    public ResponseEntity<Object> deleteMatchUserById(
+        @RequestParam("match") long match_id,
+        @RequestParam("user") long user_id) {
+
+        Match el = matchService.getById(match_id);
+        User user=userService.getById(user_id);
+
+        if (el == null || user == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(Map.of("message", "Team does not exist"));
+                .body(Map.of("message", "Match or user does not exist"));
         }
-        matchUserService.deleteById(id);
+
+        MatchUser mu=matchUserService.getMatchUserByMatchAndUser(el, user);
+        matchUserService.deleteById(mu.getId());
         return ResponseEntity.ok().body(Map.of("message", "Team deleted successfully!"));
     }
+
     
-}
+    @GetMapping("/match/{id}/users")
+    public ResponseEntity<List< User>> getMatchUsersById(@PathVariable Long id) {
+        Match el = matchService.getById(id);
+        if (el == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        List<User> matchUsers = matchUserService.getMatchPlayers(el);
+        return ResponseEntity.ok().body(matchUsers);
+        
+    }
+    
+
+}   

@@ -18,7 +18,9 @@ public class MatchUserService {
     @Autowired
     private MatchUserRepository matchUserRepository;
 
-
+    public MatchUser getMatchUserByMatchAndUser( Match match, User user){
+        return matchUserRepository.findMatchUserByMatchAndUser(match, user);
+    }
     /* 
      * user -> match
      */
