@@ -9,8 +9,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.sqli.matchmaking.model.User;
-import com.sqli.matchmaking.repository.UserRepository;
+import com.sqli.matchmaking.model.standalone.User;
+import com.sqli.matchmaking.repository.standalone.UserRepository;
 
 import java.util.Collections;
 import java.util.Set;

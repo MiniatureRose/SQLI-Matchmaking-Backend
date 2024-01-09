@@ -6,9 +6,9 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.sqli.matchmaking.model.Field;
-import com.sqli.matchmaking.model.Sport;
 import com.sqli.matchmaking.model.composite.FieldSport;
+import com.sqli.matchmaking.model.standalone.Field;
+import com.sqli.matchmaking.model.standalone.Sport;
 import com.sqli.matchmaking.repository.composite.FieldSportRepository;
 
 @Service

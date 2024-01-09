@@ -5,11 +5,11 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.sqli.matchmaking.model.Field;
-import com.sqli.matchmaking.model.Sport;
-import com.sqli.matchmaking.model.User;
 import com.sqli.matchmaking.model.composite.Match;
 import com.sqli.matchmaking.model.composite.MatchUser;
+import com.sqli.matchmaking.model.standalone.Field;
+import com.sqli.matchmaking.model.standalone.Sport;
+import com.sqli.matchmaking.model.standalone.User;
 import com.sqli.matchmaking.repository.composite.MatchUserRepository;
 
 @Service
@@ -18,9 +18,10 @@ public class MatchUserService {
     @Autowired
     private MatchUserRepository matchUserRepository;
 
-    public MatchUser getMatchUserByMatchAndUser( Match match, User user){
-        return matchUserRepository.findMatchUserByMatchAndUser(match, user);
+    public MatchUser getByMatchAndUser(Match match, User user){
+        return matchUserRepository.findByMatchAndUser(match, user);
     }
+
     /* 
      * user -> match
      */

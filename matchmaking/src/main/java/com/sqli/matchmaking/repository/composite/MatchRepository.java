@@ -8,9 +8,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import com.sqli.matchmaking.model.Field;
-import com.sqli.matchmaking.model.Sport;
 import com.sqli.matchmaking.model.composite.Match;
+import com.sqli.matchmaking.model.standalone.Field;
+import com.sqli.matchmaking.model.standalone.Sport;
 
 @Repository
 public interface MatchRepository extends JpaRepository<Match, Long> {

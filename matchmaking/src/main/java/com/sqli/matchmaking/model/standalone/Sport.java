@@ -1,4 +1,4 @@
-package com.sqli.matchmaking.model;
+package com.sqli.matchmaking.model.standalone;
 
 import jakarta.persistence.*;
 import lombok.Data;

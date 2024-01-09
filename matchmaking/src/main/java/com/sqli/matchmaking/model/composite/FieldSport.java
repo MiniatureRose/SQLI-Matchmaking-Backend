@@ -1,7 +1,7 @@
 package com.sqli.matchmaking.model.composite;
 
-import com.sqli.matchmaking.model.Field;
-import com.sqli.matchmaking.model.Sport;
+import com.sqli.matchmaking.model.standalone.Field;
+import com.sqli.matchmaking.model.standalone.Sport;
 
 import jakarta.persistence.*;
 import lombok.Data;

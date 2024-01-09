@@ -1,6 +1,6 @@
 package com.sqli.matchmaking.model.composite;
 
-import com.sqli.matchmaking.model.User;
+import com.sqli.matchmaking.model.standalone.User;
 
 import jakarta.persistence.*;
 import lombok.Data;

@@ -7,9 +7,11 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import com.sqli.matchmaking.model.*;
 import com.sqli.matchmaking.model.composite.Match;
 import com.sqli.matchmaking.model.composite.MatchUser;
+import com.sqli.matchmaking.model.standalone.Field;
+import com.sqli.matchmaking.model.standalone.Sport;
+import com.sqli.matchmaking.model.standalone.User;
 
 @Repository
 public interface MatchUserRepository extends JpaRepository<MatchUser, Long> {
@@ -17,8 +19,7 @@ public interface MatchUserRepository extends JpaRepository<MatchUser, Long> {
     List<MatchUser> findByUser(User player);
     
     @Query("SELECT mu FROM MatchUser mu WHERE mu.match= :match and mu.user= :user")
-    MatchUser findMatchUserByMatchAndUser(@Param("match") Match match, @Param("user") User user );
-
+    MatchUser findByMatchAndUser(@Param("match") Match match, @Param("user") User user );
 
     @Query("SELECT m.match FROM MatchUser m WHERE m.user = :player")
     List<Match> findMatchByUser(@Param("player") User player);

@@ -1,11 +1,11 @@
-package com.sqli.matchmaking.service;
+package com.sqli.matchmaking.service.standalone;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.sqli.matchmaking.model.Sport;
-import com.sqli.matchmaking.repository.SportRepository;
+import com.sqli.matchmaking.model.standalone.Sport;
+import com.sqli.matchmaking.repository.standalone.SportRepository;
 
 import java.util.List;
 

@@ -1,4 +1,4 @@
-package com.sqli.matchmaking.model;
+package com.sqli.matchmaking.model.standalone;
 
 import java.nio.file.Files;
 import java.nio.file.Path;

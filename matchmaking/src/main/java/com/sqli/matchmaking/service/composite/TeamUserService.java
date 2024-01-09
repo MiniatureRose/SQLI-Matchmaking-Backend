@@ -6,10 +6,10 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.sqli.matchmaking.model.User;
 import com.sqli.matchmaking.model.composite.Match;
 import com.sqli.matchmaking.model.composite.Team;
 import com.sqli.matchmaking.model.composite.TeamUser;
+import com.sqli.matchmaking.model.standalone.User;
 import com.sqli.matchmaking.repository.composite.TeamUserRepository;
 
 @Service

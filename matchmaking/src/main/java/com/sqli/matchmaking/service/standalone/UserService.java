@@ -1,10 +1,10 @@
-package com.sqli.matchmaking.service;
+package com.sqli.matchmaking.service.standalone;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.sqli.matchmaking.model.User;
-import com.sqli.matchmaking.repository.UserRepository;
+import com.sqli.matchmaking.model.standalone.User;
+import com.sqli.matchmaking.repository.standalone.UserRepository;
 
 import java.util.List;
 

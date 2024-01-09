@@ -1,8 +1,9 @@
 package com.sqli.matchmaking.controller;
 
-import com.sqli.matchmaking.model.User;
-import com.sqli.matchmaking.repository.UserRepository;
-import com.sqli.matchmaking.request.auth.LoginRequest;
+import com.sqli.matchmaking.model.standalone.User;
+import com.sqli.matchmaking.repository.standalone.UserRepository;
+import com.sqli.matchmaking.request.DTOs;
+import com.sqli.matchmaking.service.standalone.UserService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,10 +13,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
@@ -28,9 +26,12 @@ public class AuthController {
 
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private UserService userService;
+
 
     @PostMapping("/signin")
-    public ResponseEntity<Object> authenticateUser(@RequestBody LoginRequest loginDto) {
+    public ResponseEntity<Object> signin(@RequestBody DTOs.Signin loginDto) {
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginDto.getEmail(), loginDto.getPassword()));
@@ -49,5 +50,25 @@ public class AuthController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", e.getMessage()));
         }
+    }
+
+    @PostMapping("/signup")
+    public ResponseEntity<Object> signup(@RequestBody DTOs.Signup request) {
+        if (userService.emailAlreadyExists(request.getEmail())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("message", "Email already exits"));
+        }
+        // TODO: Check the structure
+        // TODO: send email verification
+        User el = User.builder()
+                .firstName(request.getFirstName())
+                .lastName(request.getLastName())
+                .email(request.getEmail())
+                .password(request.getPassword())
+                .phone(request.getPhone())
+                .role(request.getRole())
+                .build();
+        userService.save(el);
+        return ResponseEntity.ok().body(Map.of("message", "User signed up successfully!"));
     }
 }

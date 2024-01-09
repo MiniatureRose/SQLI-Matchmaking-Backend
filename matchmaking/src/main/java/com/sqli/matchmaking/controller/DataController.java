@@ -1,45 +1,38 @@
 package com.sqli.matchmaking.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.sqli.matchmaking.model.*;
 import com.sqli.matchmaking.model.composite.*;
-import com.sqli.matchmaking.service.*;
+import com.sqli.matchmaking.model.standalone.*;
+import com.sqli.matchmaking.request.DTOs;
 import com.sqli.matchmaking.service.composite.*;
+import com.sqli.matchmaking.service.standalone.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:4200")
 @RequestMapping("/data")
 public class DataController {
 
     @Autowired
-    private UserService userService;
-
-    @Autowired
     private MatchService matchService;
-
+    @Autowired
+    private UserService userService;
     @Autowired
     private SportService sportService;
-
     @Autowired
     private FieldService fieldService;
-
     @Autowired
     private TeamService teamService;
-
+    @Autowired
+    private FieldSportService fsService;
     @Autowired
     private TeamUserService teamUserService;
-
-    @Autowired
-    private MatchUserService matchUserService;
     
     /* 
      * user
@@ -63,7 +56,7 @@ public class DataController {
         User el = userService.getById(id);
         if (el == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(Map.of("message", "user does not exist"));
+                .body(Map.of("message", "User does not exist"));
         }
         userService.deleteById(id);
         return ResponseEntity.ok().body(Map.of("message", "User deleted successfully!"));
@@ -86,6 +79,18 @@ public class DataController {
         return ResponseEntity.ok(el);
     }
 
+    @PostMapping("/field")
+    public ResponseEntity<Object> createField(@RequestBody DTOs.Field request) {
+        Field el = Field.builder()
+                .name(request.getName())
+                .location(request.getLocation())
+                .noPlayers(request.getNoPlayers())
+                .build();
+        fieldService.save(el);
+        return ResponseEntity.ok().body(Map.of("message", "Field created successfully!"));
+    }
+
+
     @DeleteMapping("field/{id}")
     public ResponseEntity<Object> deleteFieldById(@PathVariable Long id) {
         Field el = fieldService.getById(id);
@@ -96,7 +101,6 @@ public class DataController {
         fieldService.deleteById(id);
         return ResponseEntity.ok().body(Map.of("message", "Field deleted successfully!"));
     }
-
 
     /* 
      * sport
@@ -115,6 +119,16 @@ public class DataController {
         return ResponseEntity.ok(el);
     }
 
+    @PostMapping("/sport")
+    public ResponseEntity<Object> createSport(@RequestBody DTOs.Sport request) {
+        Sport el = Sport.builder()
+                .name(request.getName()) // primary key maybe ?
+                .noTeams(request.getNoTeams())
+                .build();
+        sportService.save(el);
+        return ResponseEntity.ok().body(Map.of("message", "Sport created successfully!"));
+    }
+
     @DeleteMapping("sport/{id}")
     public ResponseEntity<Object> deleteSportById(@PathVariable Long id) {
         Sport el = sportService.getById(id);
@@ -124,89 +138,6 @@ public class DataController {
         }
         sportService.deleteById(id);
         return ResponseEntity.ok().body(Map.of("message", "Sport deleted successfully!"));
-    }
-
-    /* 
-     * match
-     */
-    @GetMapping("/match")
-    public ResponseEntity<List<Match>> getMatches(
-            @RequestParam("type") String type,
-            @RequestParam(value = "id", required = false) Long id,
-            @RequestParam(value = "filter", required = false) String filter) {
-
-        if (!isValidTime(type)) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
-
-        if (filter == null && id == null) {
-            List<Match> all = matchService.getMatches();
-            filterByTime(all, type);
-            return ResponseEntity.ok(all);
-        }
-
-        if (filter != null && id != null) {
-            List<Match> all = null;
-            switch (filter) {
-                case "sport":
-                    Sport sport = sportService.getById(id);
-                    if (sport == null) 
-                        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-                    all = matchService.getMatchesBySport(sport);
-                    break;
-                case "field":
-                    Field field = fieldService.getById(id);
-                    if (field == null) 
-                        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-                    all = matchService.getMatchesByField(field);
-                    break;
-                default:
-                    return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-            }
-            filterByTime(all, type);
-            return ResponseEntity.ok(all);
-        }
-
-        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-
-    }
-
-
-    @GetMapping("match/{id}")
-    public ResponseEntity<Match> getMatchById(@PathVariable Long id) {
-        Match el = matchService.getById(id);
-        if (el == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        return ResponseEntity.ok(el);
-    }
-
-    
-    @DeleteMapping("match/{id}")
-    public ResponseEntity<Object> deleteMatchById(@PathVariable Long id) {
-        Match el = matchService.getById(id);
-        if (el == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(Map.of("message", "match does not exist"));
-        }
-        matchService.deleteById(id);
-        return ResponseEntity.ok().body(Map.of("message", "Match deleted successfully!"));
-    }
-
-    private void filterByTime(List<Match> all, String time) {
-        switch (time) {
-            case "passed":
-                matchService.filterPassedMatches(all);
-                break;
-            case "coming":
-                matchService.filterComingMatches(all);
-                break;
-            default:
-        }
-    }
-
-    private boolean isValidTime(String time) {
-        return Set.of("passed", "coming", "all").contains(time);
     }
 
     /* 
@@ -226,6 +157,32 @@ public class DataController {
         return ResponseEntity.ok(el);
     }
 
+
+    @PostMapping("/team")
+    public ResponseEntity<Object> createTeam(@RequestBody DTOs.Team request) {
+        Match match = matchService.getById(request.getMatchId());
+        if (match == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("message", "Match does not exist"));
+        }
+        if (teamService.nameAlreadyExists(request.getName())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("message", "Name already exits"));
+        } // maybe we can make it primary key
+        // max of team is 2
+        if (teamService.getMatchTeams(match).size() >= 2) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("message", "Sorry, all teams arecreated for this match"));
+        }
+        Team el = Team.builder()
+                .name(request.getName())
+                .match(match)
+                .build();
+        teamService.save(el);
+        return ResponseEntity.ok().body(Map.of("message", "Team created successfully!"));
+    }
+
+
     @DeleteMapping("team/{id}")
     public ResponseEntity<Object> deleteTeamById(@PathVariable Long id) {
         Team el = teamService.getById(id);
@@ -238,95 +195,56 @@ public class DataController {
     }
 
     /* 
-     * matchuser
+     * fieldsport
      */
-    @GetMapping("/matchuser")
-    public ResponseEntity<List<Match>> getUserMatches(
-            @RequestParam("type") String type,
-            @RequestParam("user") Long userId,
-            @RequestParam(value = "id", required = false) Long id,
-            @RequestParam(value = "filter", required = false) String filter) {
-
-        if (!isValidTime(type)) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
-
-        User user = userService.getById(userId);
-        if (user == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-
-        if (filter == null && id == null) {
-            List<Match> all = matchUserService.getUserMatches(user);
-            filterByTime(all, type);
-            return ResponseEntity.ok(all);
-        }
-
-        if (filter != null && id != null) {
-            List<Match> all = null;
-            switch (filter) {
-                case "sport":
-                    Sport sport = sportService.getById(id);
-                    if (sport == null) 
-                        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-                    all = matchUserService.getUserMatchesBySport(user, sport);
-                    break;
-                case "field":
-                    Field field = fieldService.getById(id);
-                    if (field == null) 
-                        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-                    all = matchUserService.getUserMatchesByField(user, field);
-                    break;
-                default:
-                    return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-            }
-            filterByTime(all, type);
-            return ResponseEntity.ok(all);
-        }
-
-        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-
-    }
-
-
-    @GetMapping("/matchuser/{id}")
-    public ResponseEntity<MatchUser> getMatchUserById(@PathVariable Long id) {
-        MatchUser el = matchUserService.getById(id);
-        if (el == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        };
-        return ResponseEntity.ok(el);
-    }
-
-    @DeleteMapping("/matchuser")
-    public ResponseEntity<Object> deleteMatchUserById(
-        @RequestParam("match") long match_id,
-        @RequestParam("user") long user_id) {
-
-        Match el = matchService.getById(match_id);
-        User user=userService.getById(user_id);
-
-        if (el == null || user == null) {
+    @PostMapping("/fieldsport")
+    public ResponseEntity<Object> createFieldSport(@RequestBody DTOs.FieldSport request) {
+        Field field = fieldService.getById(request.getFieldId());
+        Sport sport = sportService.getById(request.getSportId());
+        if (field == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(Map.of("message", "Match or user does not exist"));
+                .body(Map.of("message", "Field does not exist"));
         }
+        if (sport == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("message", "Sport does not exist"));
+        }
+        FieldSport el = FieldSport.builder()
+                .field(field)
+                .sport(sport)
+                .build();
+        fsService.save(el);
+        return ResponseEntity.ok().body(Map.of("message", "FieldSport created successfully!"));
+    }
 
-        MatchUser mu=matchUserService.getMatchUserByMatchAndUser(el, user);
-        matchUserService.deleteById(mu.getId());
-        return ResponseEntity.ok().body(Map.of("message", "Team deleted successfully!"));
+    /* 
+     * teamuser
+     */
+    @PostMapping("/teamuser")
+    public ResponseEntity<Object> createTeamUser(@RequestBody DTOs.TeamUser request) {
+        User player = userService.getById(request.getUserId());
+        Team team = teamService.getById(request.getTeamId());
+        if (player == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("message", "Match does not exist"));
+        }
+        if (team == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("message", "Team does not exist"));
+        }
+        try {
+            TeamUser el = TeamUser.builder()
+                    .user(player)
+                    .team(team)
+                    .build();
+            teamUserService.save(el);
+            return ResponseEntity.ok().body(Map.of("message", "Player joined team successfully!"));
+        } catch (DataIntegrityViolationException e) {
+            // Handle the exception caused by the unique constraint violation
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", "Some weird error"));
+        }
     }
 
     
-    @GetMapping("/match/{id}/users")
-    public ResponseEntity<List< User>> getMatchUsersById(@PathVariable Long id) {
-        Match el = matchService.getById(id);
-        if (el == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        List<User> matchUsers = matchUserService.getMatchPlayers(el);
-        return ResponseEntity.ok().body(matchUsers);
-        
-    }
-    
-
-}   
+}

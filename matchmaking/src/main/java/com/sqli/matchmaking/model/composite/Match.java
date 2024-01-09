@@ -3,9 +3,9 @@ package com.sqli.matchmaking.model.composite;
 import java.time.Instant;
 import java.time.Duration;
 
-import com.sqli.matchmaking.model.Field;
-import com.sqli.matchmaking.model.Sport;
-import com.sqli.matchmaking.model.User;
+import com.sqli.matchmaking.model.standalone.Field;
+import com.sqli.matchmaking.model.standalone.Sport;
+import com.sqli.matchmaking.model.standalone.User;
 
 import jakarta.persistence.*;
 import lombok.Data;
