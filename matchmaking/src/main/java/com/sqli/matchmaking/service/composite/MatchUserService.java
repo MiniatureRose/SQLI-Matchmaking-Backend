@@ -7,8 +7,6 @@ import org.springframework.stereotype.Service;
 
 import com.sqli.matchmaking.model.composite.Match;
 import com.sqli.matchmaking.model.composite.MatchUser;
-import com.sqli.matchmaking.model.standalone.Field;
-import com.sqli.matchmaking.model.standalone.Sport;
 import com.sqli.matchmaking.model.standalone.User;
 import com.sqli.matchmaking.repository.composite.MatchUserRepository;
 
@@ -26,17 +24,11 @@ public class MatchUserService {
      * user -> match
      */
     public List<Match> getUserMatches(User user) {
-        return matchUserRepository.findMatchByUser(user);
+        return matchUserRepository.findMatchOfUser(user);
     }
 
-    public List<Match> getUserMatchesBySport(User user, Sport sport) {
-        List<Match> all = matchUserRepository.findMatchByUserAndSport(user, sport);
-        return all;
-    }
-
-    public List<Match> getUserMatchesByField(User user, Field field) {
-        List<Match> all = matchUserRepository.findMatchByUserAndField(user, field);
-        return all;
+    public List<Match> getUserNoMatches(User user) {
+        return matchUserRepository.findMatchOfNoUser(user);
     }
 
     /* 

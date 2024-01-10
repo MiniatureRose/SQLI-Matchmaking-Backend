@@ -4,6 +4,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -35,24 +36,22 @@ public class MatchService {
         return all;
     }
 
-    public List<Match> getMatchesBySport(Sport sport) {
-        List<Match> all = matchRepository.findMatchBySport(sport);
-        return all;
+    public List<Match> getMatchesBySport(List<Match> matches, Sport sport) {
+        return matches.stream()
+                      .filter(match -> match.getSport() != null && match.getSport().equals(sport))
+                      .collect(Collectors.toList());
     }
 
-    public List<Match> getMatchesByField(Field field) {
-        List<Match> all = matchRepository.findMatchByField(field);
-        return all;
+    public List<Match> getMatchesByField(List<Match> matches, Field field) {
+        return matches.stream()
+                      .filter(match -> match.getField() != null && match.getField().equals(field))
+                      .collect(Collectors.toList());
     }
 
-    public List<Match> getMatchesByDay(Instant date) {
-        List<Match> all = matchRepository.findMatchByDay(date);
-        all.removeIf(match -> match.getDate().isAfter(Instant.now()));
-        return all;
-    }
 
     public boolean isFieldAlreadyBooked(Field field, Instant start, Duration duration) {
-        List<Match> set = new ArrayList<>(getMatchesByField(field));
+        List<Match> all = getMatches();
+        List<Match> set = new ArrayList<>(getMatchesByField(all, field));
         filterComingMatches(set);
         Instant end = start.plus(duration);
         return set.removeIf(match -> {

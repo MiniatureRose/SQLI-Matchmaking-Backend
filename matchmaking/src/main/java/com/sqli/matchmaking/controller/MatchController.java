@@ -176,9 +176,11 @@ public class MatchController {
     }
 
 
-    @GetMapping()
-    public ResponseEntity<List<Match>> getMatches(
+    @GetMapping("")
+    public ResponseEntity<List<Match>> geMatches(
             @RequestParam String type,
+            @RequestParam(required = false) Long userId,
+            @RequestParam(required = false) Boolean myMatches,
             @RequestParam(required = false) Long id,
             @RequestParam(required = false) String filter) {
 
@@ -186,74 +188,41 @@ public class MatchController {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        if (filter == null && id == null) {
-            List<Match> all = matchService.getMatches();
+        List<Match> all = null;
+        if (userId == null && myMatches == null) {
+            all = matchService.getMatches();
             filterByTime(all, type);
-            return ResponseEntity.ok(all);
         }
-
-        if (filter != null && id != null) {
-            List<Match> all = null;
-            switch (filter) {
-                case "sport":
-                    Sport sport = sportService.getById(id);
-                    if (sport == null) 
-                        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-                    all = matchService.getMatchesBySport(sport);
-                    break;
-                case "field":
-                    Field field = fieldService.getById(id);
-                    if (field == null) 
-                        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-                    all = matchService.getMatchesByField(field);
-                    break;
-                default:
-                    return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-            }
+        else if (userId != null && myMatches != null) {
+            User user = userService.getById(userId);
+            if (user == null) 
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            if (myMatches)
+                all = matchUserService.getUserMatches(user);
+            else 
+                all = matchUserService.getUserNoMatches(user);
             filterByTime(all, type);
-            return ResponseEntity.ok(all);
         }
-
-        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-    }
-
-
-    @GetMapping("mymatches")
-    public ResponseEntity<List<Match>> getUserMatches(
-            @RequestParam String type,
-            @RequestParam("user") Long userId,
-            @RequestParam(required = false) Long id,
-            @RequestParam(required = false) String filter) {
-
-        if (!isValidTime(type)) {
+        else {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        User user = userService.getById(userId);
-        if (user == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-
         if (filter == null && id == null) {
-            List<Match> all = matchUserService.getUserMatches(user);
-            filterByTime(all, type);
             return ResponseEntity.ok(all);
         }
-
-        if (filter != null && id != null) {
-            List<Match> all = null;
+        else if (filter != null && id != null) {
             switch (filter) {
                 case "sport":
                     Sport sport = sportService.getById(id);
                     if (sport == null) 
                         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-                    all = matchUserService.getUserMatchesBySport(user, sport);
+                    all = matchService.getMatchesBySport(all, sport);
                     break;
                 case "field":
                     Field field = fieldService.getById(id);
                     if (field == null) 
                         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-                    all = matchUserService.getUserMatchesByField(user, field);
+                    all = matchService.getMatchesByField(all, field);
                     break;
                 default:
                     return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -261,9 +230,11 @@ public class MatchController {
             filterByTime(all, type);
             return ResponseEntity.ok(all);
         }
-
-        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        else {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
     }
+
 
     private void filterByTime(List<Match> all, String time) {
         switch (time) {

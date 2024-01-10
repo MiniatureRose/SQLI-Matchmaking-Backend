@@ -9,8 +9,6 @@ import org.springframework.stereotype.Repository;
 
 import com.sqli.matchmaking.model.composite.Match;
 import com.sqli.matchmaking.model.composite.MatchUser;
-import com.sqli.matchmaking.model.standalone.Field;
-import com.sqli.matchmaking.model.standalone.Sport;
 import com.sqli.matchmaking.model.standalone.User;
 
 @Repository
@@ -22,21 +20,10 @@ public interface MatchUserRepository extends JpaRepository<MatchUser, Long> {
     MatchUser findByMatchAndUser(@Param("match") Match match, @Param("user") User user );
 
     @Query("SELECT m.match FROM MatchUser m WHERE m.user = :player")
-    List<Match> findMatchByUser(@Param("player") User player);
+    List<Match> findMatchOfUser(@Param("player") User player);
 
-    @Query(value = """
-               SELECT m FROM Match m \
-               JOIN MatchUser mu ON m.id = mu.match.id \
-               WHERE mu.user = :player AND m.sport = :sport\
-               """)
-    List<Match> findMatchByUserAndSport(User player, Sport sport); 
-
-    @Query(value = """
-               SELECT m FROM Match m \
-               JOIN MatchUser mu ON m.id = mu.match.id \
-               WHERE mu.user = :player AND m.field = :field\
-               """)
-    List<Match> findMatchByUserAndField(User player, Field field);
+    @Query("SELECT m FROM Match m WHERE m.id NOT IN (SELECT mu.match.id FROM MatchUser mu WHERE mu.user = :player)")
+    List<Match> findMatchOfNoUser(@Param("player") User player);
 
     @Query("SELECT m.user FROM MatchUser m WHERE m.match = :match")
     List<User> findUsersByMatch(@Param("match") Match match); // all players within a match
