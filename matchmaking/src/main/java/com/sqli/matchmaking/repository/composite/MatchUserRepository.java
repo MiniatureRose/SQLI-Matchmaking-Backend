@@ -24,14 +24,18 @@ public interface MatchUserRepository extends JpaRepository<MatchUser, Long> {
     @Query("SELECT m.match FROM MatchUser m WHERE m.user = :player")
     List<Match> findMatchByUser(@Param("player") User player);
 
-    @Query(value = "SELECT m FROM Match m " +
-               "JOIN MatchUser mu ON m.id = mu.match.id " +
-               "WHERE mu.user = :player AND m.sport = :sport")
+    @Query(value = """
+               SELECT m FROM Match m \
+               JOIN MatchUser mu ON m.id = mu.match.id \
+               WHERE mu.user = :player AND m.sport = :sport\
+               """)
     List<Match> findMatchByUserAndSport(User player, Sport sport); 
 
-    @Query(value = "SELECT m FROM Match m " +
-               "JOIN MatchUser mu ON m.id = mu.match.id " +
-               "WHERE mu.user = :player AND m.field = :field")
+    @Query(value = """
+               SELECT m FROM Match m \
+               JOIN MatchUser mu ON m.id = mu.match.id \
+               WHERE mu.user = :player AND m.field = :field\
+               """)
     List<Match> findMatchByUserAndField(User player, Field field);
 
     @Query("SELECT m.user FROM MatchUser m WHERE m.match = :match")

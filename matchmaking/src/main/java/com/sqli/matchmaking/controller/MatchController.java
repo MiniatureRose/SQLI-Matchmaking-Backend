@@ -178,9 +178,9 @@ public class MatchController {
 
     @GetMapping()
     public ResponseEntity<List<Match>> getMatches(
-            @RequestParam("type") String type,
-            @RequestParam(value = "id", required = false) Long id,
-            @RequestParam(value = "filter", required = false) String filter) {
+            @RequestParam String type,
+            @RequestParam(required = false) Long id,
+            @RequestParam(required = false) String filter) {
 
         if (!isValidTime(type)) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -220,10 +220,10 @@ public class MatchController {
 
     @GetMapping("/mymatches")
     public ResponseEntity<List<Match>> getUserMatches(
-            @RequestParam("type") String type,
+            @RequestParam String type,
             @RequestParam("user") Long userId,
-            @RequestParam(value = "id", required = false) Long id,
-            @RequestParam(value = "filter", required = false) String filter) {
+            @RequestParam(required = false) Long id,
+            @RequestParam(required = false) String filter) {
 
         if (!isValidTime(type)) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -285,7 +285,7 @@ public class MatchController {
     @PostMapping("/make/{id}")
     public ResponseEntity<Object> make(
         @PathVariable Long matchId,
-        @RequestParam("how") String how,
+        @RequestParam String how,
         @RequestBody(required = false) DTOs.ManualMaking manualDTO) {
 
         // Check Id
@@ -329,6 +329,17 @@ public class MatchController {
                     .body(Map.of("error", "WEIRD : Cannot make match"));
         }
 
+    }
+
+    @GetMapping("/players/{id}")
+    public ResponseEntity<List<User>> getMatchPlayers(@PathVariable Long matchId) {
+        // Check id
+        Match match = matchService.getById(matchId);
+        if (match == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        // Return
+        return ResponseEntity.ok(matchUserService.getMatchPlayers(match));
     }
 
 }
