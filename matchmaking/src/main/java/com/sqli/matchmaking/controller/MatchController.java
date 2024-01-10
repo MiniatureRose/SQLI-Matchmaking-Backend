@@ -19,7 +19,7 @@ import com.sqli.matchmaking.service.standalone.*;
 
 
 @RestController
-@RequestMapping("/match")
+@RequestMapping("match")
 public class MatchController {
 
     @Autowired
@@ -39,7 +39,7 @@ public class MatchController {
     @Autowired
     private ManualMaking manualMaking;
 
-    @PostMapping("/create")
+    @PostMapping("create")
     public ResponseEntity<Object> createMatch(@RequestBody DTOs.Match request) {
         // Check existence of Ids
         User organiser = userService.getById(request.getOrganizerId());
@@ -88,8 +88,8 @@ public class MatchController {
         }
     }
 
-    @DeleteMapping("uncreate/{id}")
-    public ResponseEntity<Object> deleteMatchById(@PathVariable Long id) {
+    @DeleteMapping("uncreate")
+    public ResponseEntity<Object> deleteMatchById(@RequestParam Long id) {
         // Check Id
         Match el = matchService.getById(id);
         if (el == null) {
@@ -108,7 +108,7 @@ public class MatchController {
     }
 
 
-    @PostMapping("/join")
+    @PostMapping("join")
     public ResponseEntity<Object> joinMatch(@RequestBody DTOs.MatchUser request) {
         // Check Ids
         User player = userService.getById(request.getUserId());
@@ -144,7 +144,7 @@ public class MatchController {
         }
     }
 
-    @DeleteMapping("/unjoin")
+    @DeleteMapping("unjoin")
     public ResponseEntity<Object> deleteMatchUserById(@RequestBody DTOs.MatchUser request) {
         // Check Ids
         User player = userService.getById(request.getUserId());
@@ -218,7 +218,7 @@ public class MatchController {
     }
 
 
-    @GetMapping("/mymatches")
+    @GetMapping("mymatches")
     public ResponseEntity<List<Match>> getUserMatches(
             @RequestParam String type,
             @RequestParam("user") Long userId,
@@ -282,9 +282,9 @@ public class MatchController {
     }
 
 
-    @PostMapping("/make/{id}")
+    @PostMapping("make")
     public ResponseEntity<Object> make(
-        @PathVariable Long matchId,
+        @RequestParam Long matchId,
         @RequestParam String how,
         @RequestBody(required = false) DTOs.ManualMaking manualDTO) {
 
@@ -331,8 +331,8 @@ public class MatchController {
 
     }
 
-    @GetMapping("/players/{id}")
-    public ResponseEntity<List<User>> getMatchPlayers(@PathVariable Long matchId) {
+    @GetMapping("players")
+    public ResponseEntity<List<User>> getMatchPlayers(@RequestParam Long matchId) {
         // Check id
         Match match = matchService.getById(matchId);
         if (match == null) {

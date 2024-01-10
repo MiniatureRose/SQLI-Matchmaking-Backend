@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/data")
+@RequestMapping("data")
 public class DataController {
 
     @Autowired
@@ -37,13 +37,13 @@ public class DataController {
     /* 
      * user
      */
-    @GetMapping("/user/all")
+    @GetMapping("user/all")
     public List<User> getAllUsers() {
         return userService.getAll();
     }
 
-    @GetMapping("user/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable Long id) {
+    @GetMapping("user")
+    public ResponseEntity<User> getUserById(@RequestParam Long id) {
         User el = userService.getById(id);
         if (el == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -51,8 +51,8 @@ public class DataController {
         return ResponseEntity.ok(el);
     }
 
-    @DeleteMapping("user/{id}")
-    public ResponseEntity<Object> deleteUserById(@PathVariable Long id) {
+    @DeleteMapping("user")
+    public ResponseEntity<Object> deleteUserById(@RequestParam Long id) {
         User el = userService.getById(id);
         if (el == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -65,13 +65,13 @@ public class DataController {
     /* 
      * field
      */
-    @GetMapping("/field/all")
+    @GetMapping("field/all")
     public List<Field> getAllFields() {
         return fieldService.getAll();
     }
 
-    @GetMapping("field/{id}")
-    public ResponseEntity<Field> getFieldById(@PathVariable Long id) {
+    @GetMapping("field")
+    public ResponseEntity<Field> getFieldById(@RequestParam Long id) {
         Field el = fieldService.getById(id);
         if (el == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -79,7 +79,7 @@ public class DataController {
         return ResponseEntity.ok(el);
     }
 
-    @PostMapping("/field")
+    @PostMapping("field")
     public ResponseEntity<Object> createField(@RequestBody DTOs.Field request) {
         Field el = Field.builder()
                 .name(request.getName())
@@ -91,8 +91,8 @@ public class DataController {
     }
 
 
-    @DeleteMapping("field/{id}")
-    public ResponseEntity<Object> deleteFieldById(@PathVariable Long id) {
+    @DeleteMapping("field")
+    public ResponseEntity<Object> deleteFieldById(@RequestParam Long id) {
         Field el = fieldService.getById(id);
         if (el == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -105,13 +105,13 @@ public class DataController {
     /* 
      * sport
      */
-    @GetMapping("/sport/all")
+    @GetMapping("sport/all")
     public List<Sport> getAllSports() {
         return sportService.getAll();
     }
 
-    @GetMapping("sport/{id}")
-    public ResponseEntity<Sport> getSportById(@PathVariable Long id) {
+    @GetMapping("sport")
+    public ResponseEntity<Sport> getSportById(@RequestParam Long id) {
         Sport el = sportService.getById(id);
         if (el == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -119,7 +119,7 @@ public class DataController {
         return ResponseEntity.ok(el);
     }
 
-    @PostMapping("/sport")
+    @PostMapping("sport")
     public ResponseEntity<Object> createSport(@RequestBody DTOs.Sport request) {
         Sport el = Sport.builder()
                 .name(request.getName()) // primary key maybe ?
@@ -129,8 +129,8 @@ public class DataController {
         return ResponseEntity.ok().body(Map.of("message", "Sport created successfully!"));
     }
 
-    @DeleteMapping("sport/{id}")
-    public ResponseEntity<Object> deleteSportById(@PathVariable Long id) {
+    @DeleteMapping("sport")
+    public ResponseEntity<Object> deleteSportById(@RequestParam Long id) {
         Sport el = sportService.getById(id);
         if (el == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -148,8 +148,8 @@ public class DataController {
         return teamService.getAll();
     }
 
-    @GetMapping("team/{id}")
-    public ResponseEntity<Team> getTeamById(@PathVariable Long id) {
+    @GetMapping("team")
+    public ResponseEntity<Team> getTeamById(@RequestParam Long id) {
         Team el = teamService.getById(id);
         if (el == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -158,7 +158,7 @@ public class DataController {
     }
 
 
-    @PostMapping("/team")
+    @PostMapping("team")
     public ResponseEntity<Object> createTeam(@RequestBody DTOs.Team request) {
         Match match = matchService.getById(request.getMatchId());
         if (match == null) {
@@ -183,8 +183,8 @@ public class DataController {
     }
 
 
-    @DeleteMapping("team/{id}")
-    public ResponseEntity<Object> deleteTeamById(@PathVariable Long id) {
+    @DeleteMapping("team")
+    public ResponseEntity<Object> deleteTeamById(@RequestParam Long id) {
         Team el = teamService.getById(id);
         if (el == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -197,7 +197,7 @@ public class DataController {
     /* 
      * fieldsport
      */
-    @PostMapping("/fieldsport")
+    @PostMapping("fieldsport")
     public ResponseEntity<Object> createFieldSport(@RequestBody DTOs.FieldSport request) {
         Field field = fieldService.getById(request.getFieldId());
         Sport sport = sportService.getById(request.getSportId());
@@ -220,7 +220,7 @@ public class DataController {
     /* 
      * teamuser
      */
-    @PostMapping("/teamuser")
+    @PostMapping("teamuser")
     public ResponseEntity<Object> createTeamUser(@RequestBody DTOs.TeamUser request) {
         User player = userService.getById(request.getUserId());
         Team team = teamService.getById(request.getTeamId());
