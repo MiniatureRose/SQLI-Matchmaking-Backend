@@ -145,14 +145,17 @@ public class MatchController {
     }
 
     @DeleteMapping("unjoin")
-    public ResponseEntity<Object> deleteMatchUserById(@RequestBody DTOs.MatchUser request) {
+    public ResponseEntity<Object> deleteMatchUserById(
+        @RequestParam Long userId,
+        @RequestParam Long matchId
+        ) {
         // Check Ids
-        User player = userService.getById(request.getUserId());
+        User player = userService.getById(userId);
         if (player == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(Map.of("message", "Player does not exist"));
         }
-        Match match = matchService.getById(request.getMatchId());
+        Match match = matchService.getById(matchId);
         if (match == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(Map.of("message", "Match does not exist"));
