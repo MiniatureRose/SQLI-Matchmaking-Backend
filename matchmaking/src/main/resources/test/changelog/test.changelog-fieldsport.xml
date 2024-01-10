@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.4.xsd">
+
+    <changeSet id="create-fieldsport-table" author="achraf">
+        <createTable tableName="fieldsports">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="field_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sport_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint
+            baseTableName="fieldsports"
+            baseColumnNames="field_id"
+            constraintName="fk_fieldsport_field_id"
+            referencedTableName="fields"
+            referencedColumnNames="id"
+        />
+
+        <addForeignKeyConstraint
+            baseTableName="fieldsports"
+            baseColumnNames="sport_id"
+            constraintName="fk_fieldsport_sport_id"
+            referencedTableName="sports"
+            referencedColumnNames="id"
+        />
+    </changeSet>
+
+</databaseChangeLog>

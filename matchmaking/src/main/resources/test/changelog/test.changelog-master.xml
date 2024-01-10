@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.4.xsd">
+    
+    <include file="test.changelog-user.xml" relativeToChangelogFile="true"/>
+    <include file="test.changelog-sport.xml" relativeToChangelogFile="true"/>
+    <include file="test.changelog-field.xml" relativeToChangelogFile="true"/>
+    <include file="test.changelog-fieldsport.xml" relativeToChangelogFile="true"/>
+    <include file="test.changelog-Match.xml" relativeToChangelogFile="true"/>
+    <include file="test.changelog-matchuser.xml" relativeToChangelogFile="true"/>
+    <include file="test.changelog-team.xml" relativeToChangelogFile="true"/>
+    <include file="test.changelog-teamusers.xml" relativeToChangelogFile="true"/>
+
+</databaseChangeLog>
