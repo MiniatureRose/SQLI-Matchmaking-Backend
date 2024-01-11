@@ -14,6 +14,10 @@ public class SportService {
 
     @Autowired
     private SportRepository sportRepository;
+
+    public SportRepository repository() {
+        return sportRepository;
+    }
     
 
     public List<Sport> getAll() {

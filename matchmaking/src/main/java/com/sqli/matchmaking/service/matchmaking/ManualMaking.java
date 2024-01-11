@@ -20,4 +20,5 @@ public class ManualMaking extends MatchMaking {
     public void make(List<User> players, List<Team> teams) {
         System.out.println(info);
     }
+    
 }

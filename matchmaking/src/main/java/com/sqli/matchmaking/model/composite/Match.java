@@ -51,4 +51,47 @@ public class Match {
     @Column(name = "no_players")
     private Integer noPlayers;
 
+    public static final String CONFIRMED = "CONFIRMED";
+    public static final String CANCELED = "CANCELED";
+    public static final String PENDING = "PENDING";
+
+    @Builder.Default
+    @Column(name = "is_confirmed")
+    private String status = PENDING;
+
+    @Builder.Default
+    @Column(name = "cur_players")
+    private Integer curPlayers = 0;
+
+    
+    public void join() {
+        this.curPlayers ++;
+    }
+
+    public void unjoin() {
+        this.curPlayers --;
+    }
+
+    public Boolean isFullfilled() {
+        return this.curPlayers == this.noPlayers;
+    }
+
+    public Boolean isConfirmed() {
+        return this.status == CONFIRMED;
+    }
+
+    public Boolean isCanceled() {
+        return this.status == CANCELED;
+    }
+
+    public void confirm() {
+        this.status = CONFIRMED;
+    }
+
+    public void cancel() {
+        this.status = CANCELED;
+    }
+
 }
+
+

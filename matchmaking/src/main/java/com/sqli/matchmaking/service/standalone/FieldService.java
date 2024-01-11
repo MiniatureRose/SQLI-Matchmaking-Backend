@@ -14,6 +14,10 @@ public class FieldService {
 
     @Autowired
     private FieldRepository fieldRepository;
+
+    public FieldRepository repository() {
+        return fieldRepository;
+    }
     
 
     public List<Field> getAll() {

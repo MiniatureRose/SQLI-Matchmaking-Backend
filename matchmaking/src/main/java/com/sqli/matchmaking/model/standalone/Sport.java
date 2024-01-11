@@ -23,5 +23,5 @@ public class Sport {
 
     @Column(name = "no_teams")
     private Integer noTeams;
-
+    
 }

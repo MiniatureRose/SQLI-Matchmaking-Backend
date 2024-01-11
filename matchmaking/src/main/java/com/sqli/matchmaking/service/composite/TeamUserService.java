@@ -22,6 +22,11 @@ public class TeamUserService {
     private TeamService teamService;
 
 
+    public TeamUserRepository repository() {
+        return teamUserRepository;
+    }
+
+
     public List<TeamUser> getAll() {
         return teamUserRepository.findAll();
     }

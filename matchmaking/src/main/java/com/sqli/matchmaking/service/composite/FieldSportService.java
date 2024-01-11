@@ -17,6 +17,10 @@ public class FieldSportService {
     @Autowired
     private FieldSportRepository fsRepository;
 
+    public FieldSportRepository repository() {
+        return fsRepository;
+    }
+
 
     public List<FieldSport> getAll() {
         return fsRepository.findAll();
@@ -38,4 +42,5 @@ public class FieldSportService {
         Optional<FieldSport> find = fsRepository.findByFieldAndSport(field, sport);
         return find.isPresent();
     }
+
 }

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import com.sqli.matchmaking.model.composite.Match;
 import com.sqli.matchmaking.model.composite.MatchUser;
 import com.sqli.matchmaking.model.standalone.User;
+import com.sqli.matchmaking.repository.composite.MatchRepository;
 import com.sqli.matchmaking.repository.composite.MatchUserRepository;
 
 @Service
@@ -15,6 +16,15 @@ public class MatchUserService {
 
     @Autowired
     private MatchUserRepository matchUserRepository;
+
+    @Autowired
+    private MatchRepository matchRepository;
+
+
+    public MatchUserRepository repository() {
+        return matchUserRepository;
+    }
+
 
     public MatchUser getByMatchAndUser(Match match, User user){
         return matchUserRepository.findByMatchAndUser(match, user);
@@ -38,16 +48,6 @@ public class MatchUserService {
         return matchUserRepository.findUsersByMatch(match);
     }
 
-    public Integer getMatchRemainingPlayers(Match match) {
-        Integer res = match.getNoPlayers() - getMatchPlayers(match).size();
-        assert res >= 0 : "number of players is out of range";
-        return res;
-    }
-
-    public boolean ArePlayersFullfilled(Match match) {
-        return getMatchRemainingPlayers(match) == 0;
-    }
-
     /* 
      * basic 
      */
@@ -55,12 +55,28 @@ public class MatchUserService {
         return matchUserRepository.findById(id).orElse(null);
     }
 
+    /*TODO: think of overiding system service */
     public void save(MatchUser el) {
+        // update joined players state in match
+        Match match = el.getMatch();
+        match.join();
+        matchRepository.save(match);
+        // save
         matchUserRepository.save(el);
     }
 
-    public void deleteById(Long id) {
-        matchUserRepository.deleteById(id);
+    public void saveAll(List<MatchUser> list) {
+        for (MatchUser el : list) 
+            this.save(el);
+    }
+
+    public void delete(MatchUser el) {
+        // update joined players state in match
+        Match match = el.getMatch();
+        match.unjoin();
+        matchRepository.save(match);
+        // save
+        matchUserRepository.delete(el);
     }
 
 

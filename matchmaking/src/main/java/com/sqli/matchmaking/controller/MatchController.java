@@ -39,6 +39,7 @@ public class MatchController {
     @Autowired
     private ManualMaking manualMaking;
 
+
     @PostMapping("create")
     public ResponseEntity<Object> createMatch(@RequestBody DTOs.Match request) {
         // Check existence of Ids
@@ -89,16 +90,16 @@ public class MatchController {
     }
 
     @DeleteMapping("uncreate")
-    public ResponseEntity<Object> deleteMatchById(@RequestParam Long id) {
+    public ResponseEntity<Object> deleteMatchById(@RequestParam Long matchId) {
         // Check Id
-        Match el = matchService.getById(id);
+        Match el = matchService.getById(matchId);
         if (el == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(Map.of("message", "Match does not exist"));
         }
         try {
             // Delete
-            matchService.deleteById(id);
+            matchService.deleteById(matchId);
             // Confirm
             return ResponseEntity.ok().body(Map.of("message", "Match deleted successfully!"));
         } catch (DataIntegrityViolationException e) {
@@ -122,12 +123,16 @@ public class MatchController {
                 .body(Map.of("message", "Match does not exist"));
         }
         // Check if there is a place in match for player
-        if (matchUserService.ArePlayersFullfilled(match)) {
+        if (match.isFullfilled()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(Map.of("message", "Sorry, the team is fullfilled"));
+                .body(Map.of("message", "Match is fullfilled"));
+        }
+        // Check if there match is confirmed
+        if (match.isConfirmed()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("message", "Match is confirmed"));
         }
         // TODO: check if player is not playing another match in same date
-
         // Create MatchUser
         MatchUser el = MatchUser.builder()
                     .user(player)
@@ -160,6 +165,11 @@ public class MatchController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(Map.of("message", "Match does not exist"));
         }
+        // Check if there match is confirmed
+        if (match.isConfirmed()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("message", "Match is confirmed"));
+        }
         // Get MatchUser
         MatchUser el = matchUserService.getByMatchAndUser(match, player);
         // Check existence
@@ -169,7 +179,7 @@ public class MatchController {
         }
         try {
             // Delete it
-            matchUserService.deleteById(el.getId());
+            matchUserService.delete(el);
             // Confirm
             return ResponseEntity.ok().body(Map.of("message", "Player unjoined successfully!"));
         } catch (DataIntegrityViolationException e) {
@@ -305,6 +315,32 @@ public class MatchController {
 
     }
 
+
+    @PostMapping("confirm")
+    public ResponseEntity<Object> confirm(@RequestParam Long matchId) {
+        // Check Id
+        Match el = matchService.getById(matchId);
+        if (el == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("message", "Match does not exist"));
+        }
+        // Check if match is fullfield
+        if (el.isFullfilled() == false) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("message", "Match is not fullfilled to be confirmed"));
+        }
+        try {
+            // Delete
+            matchService.deleteById(matchId);
+            // Confirm
+            return ResponseEntity.ok().body(Map.of("message", "Match deleted successfully!"));
+        } catch (DataIntegrityViolationException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", "WEIRD : Cannot delete match"));
+        }
+    }
+
+
     @GetMapping("players")
     public ResponseEntity<List<User>> getMatchPlayers(@RequestParam Long matchId) {
         // Check id
@@ -314,6 +350,18 @@ public class MatchController {
         }
         // Return
         return ResponseEntity.ok(matchUserService.getMatchPlayers(match));
+    }
+
+    
+    @GetMapping("id")
+    public ResponseEntity<Match> getMatchById(@RequestParam Long matchId) {
+        // Check id
+        Match match = matchService.getById(matchId);
+        if (match == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        // Return
+        return ResponseEntity.ok(match);
     }
 
 }

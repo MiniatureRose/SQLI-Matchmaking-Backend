@@ -20,12 +20,8 @@ public class MatchService {
     @Autowired
     private MatchRepository matchRepository;
 
-    public void filterPassedMatches(List<Match> all) {
-        all.removeIf(match -> match.getDate().isAfter(Instant.now()));
-    }
-
-    public void filterComingMatches(List<Match> all) {
-        all.removeIf(match -> match.getDate().isBefore(Instant.now()));
+    public MatchRepository repository() {
+        return matchRepository;
     }
     
     /* 
@@ -48,7 +44,16 @@ public class MatchService {
                       .collect(Collectors.toList());
     }
 
+    public void filterPassedMatches(List<Match> all) {
+        all.removeIf(match -> match.getDate().isAfter(Instant.now()));
+    }
 
+    public void filterComingMatches(List<Match> all) {
+        all.removeIf(match -> match.getDate().isBefore(Instant.now()));
+    }
+
+
+    /* others */
     public boolean isFieldAlreadyBooked(Field field, Instant start, Duration duration) {
         List<Match> all = getMatches();
         List<Match> set = new ArrayList<>(getMatchesByField(all, field));
@@ -60,6 +65,7 @@ public class MatchService {
                 return (endMatch.isAfter(start) && startMatch.isBefore(end));
                 });
     }
+
 
 
     /* 

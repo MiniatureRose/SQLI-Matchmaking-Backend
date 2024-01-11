@@ -14,6 +14,10 @@ public class TeamService {
 
     @Autowired
     private TeamRepository teamRepository;
+
+    public TeamRepository repository() {
+        return teamRepository;
+    }
     
 
     public List<Team> getAll() {

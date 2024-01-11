@@ -13,6 +13,10 @@ public class UserService {
 
     @Autowired
     private UserRepository userRepository;
+
+    public UserRepository repository() {
+        return userRepository;
+    }
     
 
     public List<User> getAll() {
