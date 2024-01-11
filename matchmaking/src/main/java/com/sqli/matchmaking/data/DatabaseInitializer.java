@@ -56,12 +56,16 @@ public class DatabaseInitializer implements ApplicationRunner {
         System.out.println("Data has been successfully inserted");
     }
 
-
+    
     private final void insertFieldsAndSports() {
         // sport
         Sport football = Sport.builder().name("football").noTeams(2).build();
         Sport basketball = Sport.builder().name("basketball").noTeams(2).build();
         Sport volleyball = Sport.builder().name("volleyball").noTeams(2).build();
+
+        sportRepository.saveAll(Arrays.asList(
+            football, basketball, volleyball
+        ));
 
         // fields
         Field francoisBord = Field.builder().name("Francois Bord")
@@ -72,6 +76,10 @@ public class DatabaseInitializer implements ApplicationRunner {
                                             .location("bordeaux")
                                             .noPlayers(22)
                                             .build();
+
+        fieldRepository.saveAll(Arrays.asList(
+            francoisBord, doyenBruce
+        ));
 
         // sports in fields  
         fieldSportsRepository.saveAll(Arrays.asList(

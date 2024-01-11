@@ -27,7 +27,7 @@ public class MatchService {
     public void filterComingMatches(List<Match> all) {
         all.removeIf(match -> match.getDate().isBefore(Instant.now()));
     }
-
+    
     /* 
      * filtering
      */
