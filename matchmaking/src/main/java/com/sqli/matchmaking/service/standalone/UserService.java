@@ -31,10 +31,6 @@ public class UserService {
         userRepository.save(el);
     }
 
-    public void deleteById(Long id) {
-        userRepository.deleteById(id);
-    }
-
     public boolean emailAlreadyExists(String email) {
         User find = userRepository.findByEmail(email).orElse(null);
         return find != null;

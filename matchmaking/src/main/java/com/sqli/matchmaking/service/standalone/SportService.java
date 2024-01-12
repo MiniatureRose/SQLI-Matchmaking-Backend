@@ -32,8 +32,4 @@ public class SportService {
         sportRepository.save(el);
     }
 
-    public void deleteById(Long id) {
-        sportRepository.deleteById(id);
-    }
-
 }

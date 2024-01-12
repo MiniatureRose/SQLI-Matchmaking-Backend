@@ -217,12 +217,45 @@ public class MatchController {
         }
         try {
             // Confirm
-            match.confirm();;
+            match.confirm();
+            matchService.save(match);
             // Confirm
             return ResponseEntity.ok().body(Map.of("message", "Match confirmed successfully!"));
         } catch (DataIntegrityViolationException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(Map.of("error", "WEIRD : Cannot confirm match"));
+        }
+    }
+
+    @PostMapping("cancel")
+    public ResponseEntity<Object> cancel(
+        @RequestParam Long userId,
+        @RequestParam Long matchId) {
+       // Check Ids
+        User user = userService.getById(userId);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("message", "Player does not exist"));
+        }
+        Match match = matchService.getById(matchId);
+        if (match == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("message", "Match does not exist"));
+        }
+        // Check authorities
+        if (!match.getOrganizer().equals(user) && !user.isAdmin()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("message", "User is neither the organizer or an admin"));
+        }
+        try {
+            // Cancel
+            match.cancel();
+            matchService.save(match);
+            // Confirm
+            return ResponseEntity.ok().body(Map.of("message", "Match canceled successfully!"));
+        } catch (DataIntegrityViolationException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", "WEIRD : Cannot cancel match"));
         }
     }
 

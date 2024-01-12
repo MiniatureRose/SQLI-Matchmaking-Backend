@@ -20,8 +20,6 @@ import java.util.Map;
 public class DataController {
 
     @Autowired
-    private MatchService matchService;
-    @Autowired
     private UserService userService;
     @Autowired
     private SportService sportService;
@@ -49,17 +47,6 @@ public class DataController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         return ResponseEntity.ok(el);
-    }
-
-    @DeleteMapping("user")
-    public ResponseEntity<Object> deleteUserById(@RequestParam Long id) {
-        User el = userService.getById(id);
-        if (el == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(Map.of("message", "User does not exist"));
-        }
-        userService.deleteById(id);
-        return ResponseEntity.ok().body(Map.of("message", "User deleted successfully!"));
     }
 
     /* 
@@ -90,18 +77,6 @@ public class DataController {
         return ResponseEntity.ok().body(Map.of("message", "Field created successfully!"));
     }
 
-
-    @DeleteMapping("field")
-    public ResponseEntity<Object> deleteFieldById(@RequestParam Long id) {
-        Field el = fieldService.getById(id);
-        if (el == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(Map.of("message", "Field does not exist"));
-        }
-        fieldService.deleteById(id);
-        return ResponseEntity.ok().body(Map.of("message", "Field deleted successfully!"));
-    }
-
     /* 
      * sport
      */
@@ -129,17 +104,6 @@ public class DataController {
         return ResponseEntity.ok().body(Map.of("message", "Sport created successfully!"));
     }
 
-    @DeleteMapping("sport")
-    public ResponseEntity<Object> deleteSportById(@RequestParam Long id) {
-        Sport el = sportService.getById(id);
-        if (el == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(Map.of("message", "Sport does not exist"));
-        }
-        sportService.deleteById(id);
-        return ResponseEntity.ok().body(Map.of("message", "Sport deleted successfully!"));
-    }
-
     /* 
      * team
      */
@@ -155,39 +119,6 @@ public class DataController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         return ResponseEntity.ok(el);
-    }
-
-
-    @PostMapping("team")
-    public ResponseEntity<Object> createTeam(@RequestBody DTOs.Team request) {
-        Match match = matchService.getById(request.getMatchId());
-        if (match == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(Map.of("message", "Match does not exist"));
-        }
-        // max of team is 2
-        if (teamService.getMatchTeams(match).size() >= 2) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(Map.of("message", "Sorry, all teams arecreated for this match"));
-        }
-        Team el = Team.builder()
-                .name(request.getName())
-                .match(match)
-                .build();
-        teamService.save(el);
-        return ResponseEntity.ok().body(Map.of("message", "Team created successfully!"));
-    }
-
-
-    @DeleteMapping("team")
-    public ResponseEntity<Object> deleteTeamById(@RequestParam Long id) {
-        Team el = teamService.getById(id);
-        if (el == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(Map.of("message", "Team does not exist"));
-        }
-        teamService.delete(el);
-        return ResponseEntity.ok().body(Map.of("message", "Team deleted successfully!"));
     }
 
     /* 

@@ -32,8 +32,4 @@ public class FieldService {
         fieldRepository.save(el);
     }
 
-    public void deleteById(Long id) {
-        fieldRepository.deleteById(id);
-    }
-
 }
