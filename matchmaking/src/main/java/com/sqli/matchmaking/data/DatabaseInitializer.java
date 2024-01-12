@@ -15,8 +15,8 @@ import com.sqli.matchmaking.service.composite.*;
 import com.sqli.matchmaking.service.standalone.*;
 import com.sqli.matchmaking.service.matchmaking.RandomMaking;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
+////import java.nio.file.Path;
+////import java.nio.file.Paths;
 import lombok.RequiredArgsConstructor;
 
 @Component
@@ -39,23 +39,14 @@ public class DatabaseInitializer implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) throws Exception {
         
-        System.out.println("ff");
         teamUserService.repository().deleteAll();
-        System.out.println("ff");
         matchUserService.repository().deleteAll();
-        System.out.println("ff");
         teamService.repository().deleteAll();
-        System.out.println("ff");
         matchService.repository().deleteAll();
-        System.out.println("ff");
         fieldSportsService.repository().deleteAll();
-        System.out.println("ff");
         fieldService.repository().deleteAll();
-        System.out.println("ff");
         sportService.repository().deleteAll();
-        System.out.println("ff");
         userService.repository().deleteAll();
-        System.out.println("ff");
         System.out.println("Data has been successfully deleted");
 
         insertFieldsAndSports();
@@ -102,12 +93,6 @@ public class DatabaseInitializer implements ApplicationRunner {
 
 
     private final void insertPlayers() throws Exception {
-        // Get an image
-        String root = System.getProperty("user.dir");
-        Path defaultImagePath = Paths.get(root, "src", "main", "java", "com", "sqli", "matchmaking");
-        String defaultImageFileName = "freddie.jpg";
-        String defaultImageUrl = Paths.get(defaultImagePath.toString(), defaultImageFileName).toString();
-        ////byte[] defaultImageByte = User.getImageBytes(defaultImageUrl);
 
         userService.repository().saveAll(Arrays.asList(
             User.builder().firstName("Oussama")
@@ -115,7 +100,7 @@ public class DatabaseInitializer implements ApplicationRunner {
                             .email("oussama@example.com")
                             .password("passwordOussama")
                             .phone("0123456789")
-                            .profileImage(defaultImageUrl)
+                            .profileImage("/assets/Player6.svg")
                             .role("USER")
                             .build(),
             User.builder().firstName("Mouad")
@@ -238,3 +223,13 @@ public class DatabaseInitializer implements ApplicationRunner {
         random.makeJoin(lhaya);
     }
 }
+
+
+    /* 
+    // Get an image
+    String root = System.getProperty("user.dir");
+    Path defaultImagePath = Paths.get(root, "src", "main", "java", "com", "sqli", "matchmaking");
+    String defaultImageFileName = "freddie.jpg";
+    String defaultImageUrl = Paths.get(defaultImagePath.toString(), defaultImageFileName).toString();
+    ////byte[] defaultImageByte = User.getImageBytes(defaultImageUrl);
+    */
