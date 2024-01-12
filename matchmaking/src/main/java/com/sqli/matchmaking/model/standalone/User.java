@@ -54,9 +54,19 @@ public class User {
     @Column(name = "profile_image")
     private String profileImage;
 
+    private static final String ADMIN = "ADMIN";
+    private static final String USER = "USER";
+
     @Column(name = "role")
     private String role;
 
+    public Boolean isAdmin() {
+        return this.role.equals(ADMIN);
+    }
+
+    public Boolean isUser() {
+        return this.role.equals(USER);
+    }
 
     public static byte[] getImageBytes(String imagePath) throws Exception {
         Path path = Paths.get(imagePath);

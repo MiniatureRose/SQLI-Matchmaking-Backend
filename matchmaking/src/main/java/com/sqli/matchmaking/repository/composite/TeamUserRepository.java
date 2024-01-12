@@ -12,6 +12,8 @@ import com.sqli.matchmaking.model.standalone.User;
 @Repository
 public interface TeamUserRepository extends JpaRepository<TeamUser, Long> {
 
+    List<TeamUser> findByTeam(Team team); 
+    List<TeamUser> findByUser(User user); 
     List<Team> findTeamByUser(User user); //! user team history  reduce ?
     List<User> findUserByTeam(Team team); // players of team within a match
 

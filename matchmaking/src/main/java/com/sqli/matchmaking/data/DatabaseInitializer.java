@@ -39,14 +39,23 @@ public class DatabaseInitializer implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) throws Exception {
         
+        System.out.println("ff");
         teamUserService.repository().deleteAll();
+        System.out.println("ff");
         matchUserService.repository().deleteAll();
+        System.out.println("ff");
         teamService.repository().deleteAll();
+        System.out.println("ff");
         matchService.repository().deleteAll();
+        System.out.println("ff");
         fieldSportsService.repository().deleteAll();
+        System.out.println("ff");
         fieldService.repository().deleteAll();
+        System.out.println("ff");
         sportService.repository().deleteAll();
+        System.out.println("ff");
         userService.repository().deleteAll();
+        System.out.println("ff");
         System.out.println("Data has been successfully deleted");
 
         insertFieldsAndSports();

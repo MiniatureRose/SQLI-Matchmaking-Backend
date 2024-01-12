@@ -39,7 +39,9 @@ public class MatchController {
     @Autowired
     private ManualMaking manualMaking;
 
-
+    /*
+     * POST
+     */
     @PostMapping("create")
     public ResponseEntity<Object> createMatch(@RequestBody DTOs.Match request) {
         // Check existence of Ids
@@ -89,26 +91,6 @@ public class MatchController {
         }
     }
 
-    @DeleteMapping("uncreate")
-    public ResponseEntity<Object> deleteMatchById(@RequestParam Long matchId) {
-        // Check Id
-        Match el = matchService.getById(matchId);
-        if (el == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(Map.of("message", "Match does not exist"));
-        }
-        try {
-            // Delete
-            matchService.deleteById(matchId);
-            // Confirm
-            return ResponseEntity.ok().body(Map.of("message", "Match deleted successfully!"));
-        } catch (DataIntegrityViolationException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(Map.of("error", "WEIRD : Cannot delete match"));
-        }
-    }
-
-
     @PostMapping("join")
     public ResponseEntity<Object> joinMatch(@RequestBody DTOs.MatchUser request) {
         // Check Ids
@@ -149,11 +131,140 @@ public class MatchController {
         }
     }
 
-    @DeleteMapping("unjoin")
-    public ResponseEntity<Object> deleteMatchUserById(
+    @PostMapping("make")
+    public ResponseEntity<Object> make(
         @RequestParam Long userId,
-        @RequestParam Long matchId
-        ) {
+        @RequestParam Long matchId,
+        @RequestParam String how,
+        @RequestBody(required = false) DTOs.ManualMaking manualDTO) {
+        // Check Ids
+        User user = userService.getById(userId);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("message", "Player does not exist"));
+        }
+        Match match = matchService.getById(matchId);
+        if (match == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("message", "Match does not exist"));
+        }
+        // Check authorities
+        if (!match.getOrganizer().equals(user) && !user.isAdmin()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("message", "User is neither the organizer or an admin"));
+        }
+        // Define how
+        MatchMaking service = null;
+        switch (how) {
+            case "random":
+                service = this.randomMaking;
+                break;
+            case "smart":
+                service = this.randomMaking;
+                break;
+            case "manual":
+                //! must be required
+                service = this.manualMaking;
+                break;
+            default:
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        try {
+            // Create teams
+            service.createTeams(match);
+        } catch (DataIntegrityViolationException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", "WEIRD : Cannot save team"));
+        }
+
+        try {
+            // Make the game!
+            service.makeJoin(match);
+            // Confirm
+            return ResponseEntity.ok().body(Map.of("message", "Making has well done!"));
+        } catch (DataIntegrityViolationException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", "WEIRD : Cannot make match"));
+        }
+
+    }
+
+    @PostMapping("confirm")
+    public ResponseEntity<Object> confirm(
+        @RequestParam Long userId,
+        @RequestParam Long matchId) {
+       // Check Ids
+        User user = userService.getById(userId);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("message", "Player does not exist"));
+        }
+        Match match = matchService.getById(matchId);
+        if (match == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("message", "Match does not exist"));
+        }
+        // Check authorities
+        if (!match.getOrganizer().equals(user) && !user.isAdmin()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("message", "User is neither the organizer or an admin"));
+        }
+        // Check if match is fullfield
+        if (match.isFullfilled() == false) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("message", "Match is not fullfilled to be confirmed"));
+        }
+        try {
+            // Confirm
+            match.confirm();;
+            // Confirm
+            return ResponseEntity.ok().body(Map.of("message", "Match confirmed successfully!"));
+        } catch (DataIntegrityViolationException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", "WEIRD : Cannot confirm match"));
+        }
+    }
+
+
+    /*
+     * DELETE
+     */
+    @DeleteMapping("uncreate")
+    public ResponseEntity<Object> deleteMatch(        
+        @RequestParam Long userId,
+        @RequestParam Long matchId) {
+        // Check Ids
+        User user = userService.getById(userId);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("message", "User does not exist"));
+        }
+        Match match = matchService.getById(matchId);
+        if (match == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("message", "Match does not exist"));
+        }
+        // Check authorities
+        if (!match.getOrganizer().equals(user) && !user.isAdmin()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("message", "User is neither the organizer or an admin"));
+        }
+        try {
+            // Delete
+            matchService.delete(match);
+            // Confirm
+            return ResponseEntity.ok().body(Map.of("message", "Match deleted successfully!"));
+        } catch (DataIntegrityViolationException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", "WEIRD : Cannot delete match"));
+        }
+    }
+
+    @DeleteMapping("unjoin")
+    public ResponseEntity<Object> deleteMatchUser(
+        @RequestParam Long userId,
+        @RequestParam Long matchId) {
         // Check Ids
         User player = userService.getById(userId);
         if (player == null) {
@@ -186,6 +297,33 @@ public class MatchController {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(Map.of("error", "WEIRD : Cannot unjoin from match"));
         }
+    }
+
+
+    /*
+     * GET
+     */
+    @GetMapping("players")
+    public ResponseEntity<List<User>> getMatchPlayers(@RequestParam Long matchId) {
+        // Check id
+        Match match = matchService.getById(matchId);
+        if (match == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        // Return
+        return ResponseEntity.ok(matchUserService.getMatchPlayers(match));
+    }
+
+    
+    @GetMapping("id")
+    public ResponseEntity<Match> getMatchById(@RequestParam Long matchId) {
+        // Check id
+        Match match = matchService.getById(matchId);
+        if (match == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        // Return
+        return ResponseEntity.ok(match);
     }
 
 
@@ -248,7 +386,6 @@ public class MatchController {
         }
     }
 
-
     private void filterByTime(List<Match> all, String time) {
         switch (time) {
             case "passed":
@@ -263,105 +400,6 @@ public class MatchController {
 
     private boolean isValidTime(String time) {
         return Set.of("passed", "coming", "all").contains(time);
-    }
-
-
-    @PostMapping("make")
-    public ResponseEntity<Object> make(
-        @RequestParam Long matchId,
-        @RequestParam String how,
-        @RequestBody(required = false) DTOs.ManualMaking manualDTO) {
-
-        // Check Id
-        Match match = matchService.getById(matchId);
-        if (match == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(Map.of("message", "Match does not exist"));
-        }
-
-        MatchMaking service = null;
-        switch (how) {
-            case "random":
-                service = this.randomMaking;
-                break;
-            case "smart":
-                service = this.randomMaking;
-                break;
-            case "manual":
-                //! must be required
-                service = this.manualMaking;
-                break;
-            default:
-                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
-
-        try {
-            // Create teams
-            service.createTeams(match);
-        } catch (DataIntegrityViolationException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(Map.of("error", "WEIRD : Cannot save team"));
-        }
-
-        try {
-            // Make the game!
-            service.makeJoin(match);
-            // Confirm
-            return ResponseEntity.ok().body(Map.of("message", "Making has well done!"));
-        } catch (DataIntegrityViolationException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(Map.of("error", "WEIRD : Cannot make match"));
-        }
-
-    }
-
-
-    @PostMapping("confirm")
-    public ResponseEntity<Object> confirm(@RequestParam Long matchId) {
-        // Check Id
-        Match el = matchService.getById(matchId);
-        if (el == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(Map.of("message", "Match does not exist"));
-        }
-        // Check if match is fullfield
-        if (el.isFullfilled() == false) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(Map.of("message", "Match is not fullfilled to be confirmed"));
-        }
-        try {
-            // Delete
-            matchService.deleteById(matchId);
-            // Confirm
-            return ResponseEntity.ok().body(Map.of("message", "Match deleted successfully!"));
-        } catch (DataIntegrityViolationException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(Map.of("error", "WEIRD : Cannot delete match"));
-        }
-    }
-
-
-    @GetMapping("players")
-    public ResponseEntity<List<User>> getMatchPlayers(@RequestParam Long matchId) {
-        // Check id
-        Match match = matchService.getById(matchId);
-        if (match == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        // Return
-        return ResponseEntity.ok(matchUserService.getMatchPlayers(match));
-    }
-
-    
-    @GetMapping("id")
-    public ResponseEntity<Match> getMatchById(@RequestParam Long matchId) {
-        // Check id
-        Match match = matchService.getById(matchId);
-        if (match == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        // Return
-        return ResponseEntity.ok(match);
     }
 
 }

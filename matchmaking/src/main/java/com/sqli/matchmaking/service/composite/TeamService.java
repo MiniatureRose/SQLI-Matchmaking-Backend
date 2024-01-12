@@ -5,7 +5,9 @@ import org.springframework.stereotype.Service;
 
 import com.sqli.matchmaking.model.composite.Match;
 import com.sqli.matchmaking.model.composite.Team;
+import com.sqli.matchmaking.model.composite.TeamUser;
 import com.sqli.matchmaking.repository.composite.TeamRepository;
+import com.sqli.matchmaking.repository.composite.TeamUserRepository;
 
 import java.util.List;
 
@@ -14,12 +16,14 @@ public class TeamService {
 
     @Autowired
     private TeamRepository teamRepository;
+    @Autowired
+    private TeamUserRepository teamUserRepository;
 
     public TeamRepository repository() {
         return teamRepository;
     }
-    
 
+    
     public List<Team> getAll() {
         return teamRepository.findAll();
     }
@@ -32,17 +36,16 @@ public class TeamService {
         teamRepository.save(el);
     }
 
-    public void deleteById(Long id) {
-        teamRepository.deleteById(id);
-    }
-
-    public boolean nameAlreadyExists(String name) {
-        Team find = teamRepository.findByName(name).orElse(null);
-        return find == null;
+    public void delete(Team el) {
+        // Remove all teamusers having el
+        List<TeamUser> teamUsers = teamUserRepository.findByTeam(el);
+        teamUserRepository.deleteAll(teamUsers);
+        // Then remove team
+        teamRepository.delete(el);
     }
 
     public List<Team> getMatchTeams(Match match) {
-        return teamRepository.findTeamsByMatch(match);
+        return teamRepository.findByMatch(match);
     }
 
 }

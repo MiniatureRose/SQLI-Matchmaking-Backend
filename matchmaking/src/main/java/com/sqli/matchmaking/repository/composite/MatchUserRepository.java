@@ -15,6 +15,8 @@ import com.sqli.matchmaking.model.standalone.User;
 public interface MatchUserRepository extends JpaRepository<MatchUser, Long> {
     
     List<MatchUser> findByUser(User player);
+
+    List<MatchUser> findByMatch(Match match);
     
     @Query("SELECT mu FROM MatchUser mu WHERE mu.match= :match and mu.user= :user")
     MatchUser findByMatchAndUser(@Param("match") Match match, @Param("user") User user );

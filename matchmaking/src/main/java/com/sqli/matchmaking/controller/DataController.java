@@ -165,10 +165,6 @@ public class DataController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(Map.of("message", "Match does not exist"));
         }
-        if (teamService.nameAlreadyExists(request.getName())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(Map.of("message", "Name already exits"));
-        } // maybe we can make it primary key
         // max of team is 2
         if (teamService.getMatchTeams(match).size() >= 2) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -190,7 +186,7 @@ public class DataController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(Map.of("message", "Team does not exist"));
         }
-        teamService.deleteById(id);
+        teamService.delete(el);
         return ResponseEntity.ok().body(Map.of("message", "Team deleted successfully!"));
     }
 

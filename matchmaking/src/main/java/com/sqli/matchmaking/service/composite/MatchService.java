@@ -10,20 +10,28 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.sqli.matchmaking.model.composite.Match;
+import com.sqli.matchmaking.model.composite.MatchUser;
+import com.sqli.matchmaking.model.composite.Team;
 import com.sqli.matchmaking.model.standalone.Field;
 import com.sqli.matchmaking.model.standalone.Sport;
 import com.sqli.matchmaking.repository.composite.MatchRepository;
+import com.sqli.matchmaking.repository.composite.MatchUserRepository;
 
 @Service
 public class MatchService {
     
     @Autowired
     private MatchRepository matchRepository;
+    @Autowired
+    private MatchUserRepository matchUserRepository;
+    @Autowired
+    private TeamService teamService;
 
     public MatchRepository repository() {
         return matchRepository;
     }
     
+
     /* 
      * filtering
      */
@@ -67,7 +75,6 @@ public class MatchService {
     }
 
 
-
     /* 
      * basic 
      */
@@ -79,8 +86,15 @@ public class MatchService {
         matchRepository.save(el);
     }
 
-    public void deleteById(Long id) {
-        matchRepository.deleteById(id);
+    public void delete(Match el) {
+        // Remove all matchUsers having el
+        List<MatchUser> matchUsers = matchUserRepository.findByMatch(el);
+        matchUserRepository.deleteAll(matchUsers);
+        // Select all teams having el
+        List<Team> teams = teamService.repository().findByMatch(el);
+        for (Team team : teams) teamService.delete(team);
+        // Then remove el
+        matchRepository.delete(el);
     }
 
 }
