@@ -20,7 +20,7 @@ import lombok.Builder;
 @Entity
 @Data
 @Table(name = "matches", uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"field_id", "date"})
+        @UniqueConstraint(columnNames = { "field_id", "date" })
 })
 public class Match {
 
@@ -57,6 +57,12 @@ public class Match {
     @Column(name = "no_players")
     private Integer noPlayers;
 
+    @Column(name = "noSubs")
+    private Integer noSubs;
+
+    @Column(name = "description")
+    private String description;
+
     @Builder.Default
     @Column(name = "cur_players")
     private Integer curPlayers = 0;
@@ -65,7 +71,6 @@ public class Match {
     @Column(name = "status")
     private String status = PENDING;
 
-    
     @JsonIgnore
     public Boolean isFullfilled() {
         return this.curPlayers == this.noPlayers;
@@ -90,13 +95,11 @@ public class Match {
     }
 
     public void join() {
-        this.curPlayers ++;
+        this.curPlayers++;
     }
 
     public void unjoin() {
-        this.curPlayers --;
+        this.curPlayers--;
     }
 
 }
-
-

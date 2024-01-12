@@ -30,6 +30,12 @@
             <column name="no_players" type="INTEGER">
                 <constraints nullable="true"/>
             </column>
+            <column name="no_subs" type="INTEGER">
+                <constraints nullable="true"/>
+            </column>
+            <column name="description" type="VARCHAR(1000)">
+                <constraints nullable="true"/>
+            </column>
         </createTable>
 
         <addForeignKeyConstraint

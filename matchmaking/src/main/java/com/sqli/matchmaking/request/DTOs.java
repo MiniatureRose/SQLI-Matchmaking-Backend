@@ -5,7 +5,6 @@ import java.time.Instant;
 
 import lombok.Data;
 
-
 public class DTOs {
 
     @Data
@@ -22,7 +21,7 @@ public class DTOs {
     public static final class Signin {
         private final String email;
         private final String password;
-    
+
     }
 
     @Data
@@ -34,6 +33,8 @@ public class DTOs {
         private final Instant date;
         private final Duration duration;
         private final Integer noPlayers;
+        private final Integer noSubs;
+        private final String description;
     }
 
     @Data
@@ -43,44 +44,39 @@ public class DTOs {
     }
 
     @Data
-    public static final class TeamUser {   
+    public static final class TeamUser {
         private final Long userId;
-        private final Long teamId;   
+        private final Long teamId;
     }
 
     @Data
-    public static final class Team {    
+    public static final class Team {
         private final String name;
-        private final Long matchId;   
+        private final Long matchId;
     }
 
     @Data
     public static final class ManualMaking {
-    
+
     }
 
     @Data
     public static final class FieldSport {
         private final Long fieldId;
-        private final Long sportId; 
+        private final Long sportId;
     }
 
-
     @Data
-    public static final class Sport {   
+    public static final class Sport {
         private final String name;
-        private final Integer noTeams;     
+        private final Integer noTeams;
     }
 
     @Data
-    public static final class Field {    
+    public static final class Field {
         private final String name;
         private final String location;
-        private final Integer noPlayers;    
+        private final Integer noPlayers;
     }
 
-
-    
 }
-
-
