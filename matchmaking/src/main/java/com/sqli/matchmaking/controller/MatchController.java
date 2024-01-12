@@ -25,6 +25,8 @@ public class MatchController {
     @Autowired
     private MatchUserService matchUserService;
     @Autowired
+    private TeamUserService teamUserService;
+    @Autowired
     private MatchService matchService;
     @Autowired
     private FieldSportService fsService;
@@ -345,6 +347,17 @@ public class MatchController {
         }
         // Return
         return ResponseEntity.ok(matchUserService.getMatchPlayers(match));
+    }
+
+    @GetMapping("teams")
+    public ResponseEntity<List<List<User>>> getMatchTeams(@RequestParam Long matchId) {
+        // Check id
+        Match match = matchService.getById(matchId);
+        if (match == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        // Return
+        return ResponseEntity.ok(teamUserService.getMatchTeams(match));
     }
 
     

@@ -43,13 +43,9 @@ public class TeamUserService {
         teamUserRepository.deleteById(id);
     }
 
-    public List<User> getMatchPlayersOfTeam(Team team) {
-        return teamUserRepository.findUserByTeam(team);
-    }
-
-    public List<List<User>> getMatchPlayersByTeam(Match match) {
+    public List<List<User>> getMatchTeams(Match match) {
         List<Team> teams = teamService.getMatchTeams(match);
-        return teams.stream().map(t -> teamUserRepository.findUserByTeam(t))
+        return teams.stream().map(t -> teamUserRepository.findUsersByTeam(t))
                 .collect(Collectors.toList());
     }
 
