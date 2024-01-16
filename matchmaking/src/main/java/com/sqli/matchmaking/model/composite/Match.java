@@ -73,17 +73,17 @@ public final class Match {
 
     @JsonIgnore
     public Boolean isConfirmed() {
-        return this.status == CONFIRMED;
+        return this.status.equals(CONFIRMED);
     }
 
     @JsonIgnore
     public Boolean isCanceled() {
-        return this.status == CANCELED;
+        return this.status.equals(CANCELED);
     }
 
     @JsonIgnore
     public Boolean isPending() {
-        return this.status == PENDING;
+        return this.status.equals(PENDING);
     }
 
     @JsonIgnore
