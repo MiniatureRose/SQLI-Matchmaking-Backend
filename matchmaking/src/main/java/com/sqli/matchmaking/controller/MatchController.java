@@ -608,7 +608,6 @@ public final class MatchController {
         List<Match> all = null;
         if (userId == null && myMatches == null) {
             all = matchService.getAll();
-            filterByTime(all, type);
         }
         else if (userId != null && myMatches != null) {
             User user = userService.getById(userId);
@@ -618,16 +617,12 @@ public final class MatchController {
                 all = matchService.getUserMatches(user);
             else 
                 all = matchService.getUserNoMatches(user);
-            filterByTime(all, type);
         }
         else {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        if (filter == null && id == null) {
-            return ResponseEntity.ok(all);
-        }
-        else if (filter != null && id != null) {
+        if (filter != null && id != null) {
             switch (filter) {
                 case "sport":
                     Sport sport = fieldSportService.getSportById(id);
@@ -644,15 +639,17 @@ public final class MatchController {
                 default:
                     return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
             }
-            filterByTime(all, type);
-            // Set current players
-            matchService.setCureentPlayers(all);
-            // Return
-            return ResponseEntity.ok(all);
         }
-        else {
+        else if (filter != null || id != null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
+        // Filter by time
+        filterByTime(all, type);
+        // Set current players
+        matchService.setCureentPlayers(all);
+        // Return
+        return ResponseEntity.ok(all);
+
     }
 
     private void filterByTime(List<Match> all, String time) {
