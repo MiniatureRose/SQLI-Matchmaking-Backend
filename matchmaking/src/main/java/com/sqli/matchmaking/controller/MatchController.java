@@ -115,7 +115,7 @@ public final class MatchController {
                 .body(Map.of("message", "Match does not exist"));
         }
         // Check status
-        if (!match.isPending()) {
+        if (match.isPending() == false) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(Map.of("message", "Match is either canceled or confirmed"));
         }
@@ -416,7 +416,7 @@ public final class MatchController {
                 .body(Map.of("message", "User is neither the organizer or an admin"));
         }
         // Check status
-        if (!match.isPending()) {
+        if (match.isPending() == false) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(Map.of("message", "Match is either canceled or already confirmed"));
         }
@@ -587,6 +587,8 @@ public final class MatchController {
         if (match == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
+        // Set current players
+        matchService.setCureentPlayers(match);
         // Return
         return ResponseEntity.ok(match);
     }
@@ -643,6 +645,9 @@ public final class MatchController {
                     return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
             }
             filterByTime(all, type);
+            // Set current players
+            matchService.setCureentPlayers(all);
+            // Return
             return ResponseEntity.ok(all);
         }
         else {

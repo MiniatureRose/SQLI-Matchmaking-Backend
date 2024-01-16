@@ -43,6 +43,14 @@ public class MatchService {
         service.make(players, teams);
     }
 
+    public void setCureentPlayers(Match match) {
+        match.setCurPlayers(this.getMatchPlayers(match).size());
+    }
+
+    public void setCureentPlayers(List<Match> matches) {
+        for (Match match : matches) setCureentPlayers(match);
+    }
+
 
     /* 
      * Booleans

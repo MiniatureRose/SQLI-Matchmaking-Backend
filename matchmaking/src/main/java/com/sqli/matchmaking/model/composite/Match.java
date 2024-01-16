@@ -68,6 +68,9 @@ public final class Match {
     @Column(name = "status")
     private String status = PENDING;
 
+    @Builder.Default
+    private Integer curPlayers = 0;
+
     @JsonIgnore
     public Boolean isConfirmed() {
         return this.status == CONFIRMED;
