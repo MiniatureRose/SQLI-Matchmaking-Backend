@@ -233,7 +233,7 @@ public final class MatchController {
         }
         // Check players Ids
         for (TeamPlayers tp : manualDTO) {
-            for (Long playerId : tp.getPalyers()) {
+            for (Long playerId : tp.getPlayersIds()) {
                 User player = userService.getById(playerId);
                 if (player == null) {
                     return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -255,7 +255,7 @@ public final class MatchController {
                         .body(Map.of("error", "WEIRD : Cannot save team"));
             }
             // Join all team players
-            for (Long playerId : tp.getPalyers()) {
+            for (Long playerId : tp.getPlayersIds()) {
                 User player = userService.getById(playerId);
                 // Create join
                 TeamUser join = TeamUser.builder().team(team).user(player).build();

@@ -53,7 +53,7 @@ public final class RequestDTOs {
     @Data
     public static final class TeamPlayers {
         private final String teamName;
-        private final List<Long> palyers;
+        private final List<Long> playersIds;
     }
 
 
