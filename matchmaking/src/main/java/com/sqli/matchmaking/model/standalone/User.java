@@ -19,7 +19,7 @@ import lombok.Builder;
     @UniqueConstraint(columnNames = {"email"}),
     @UniqueConstraint(columnNames = {"first_name", "last_name"})
 })
-public class User {
+public final class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -40,16 +40,9 @@ public class User {
     @Column(name = "phone")
     private String phone;
 
-    /*
-    @Lob
-    @Column(name = "profile_image", columnDefinition = "BLOB")
-    private byte[] profileImage;
-
-    public void setImageFromPath(String path) throws Exception {
-        byte[] imageBytes = getImageBytes(path);
-        this.setProfileImage(imageBytes);
-    }
-    */
+    @Builder.Default
+    @Column(name = "ranking")
+    private Double rank = 1000.;
 
     @Column(name = "profile_image")
     private String profileImage;
@@ -74,3 +67,16 @@ public class User {
     }
 
 }
+
+
+
+    /*
+    @Lob
+    @Column(name = "profile_image", columnDefinition = "BLOB")
+    private byte[] profileImage;
+
+    public void setImageFromPath(String path) throws Exception {
+        byte[] imageBytes = getImageBytes(path);
+        this.setProfileImage(imageBytes);
+    }
+    */

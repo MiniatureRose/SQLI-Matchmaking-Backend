@@ -22,9 +22,10 @@ import lombok.Builder;
 @Table(name = "matches", uniqueConstraints = {
         @UniqueConstraint(columnNames = { "field_id", "date" })
 })
-public class Match {
+public final class Match {
 
     // status
+    public static final String RECORDED = "RECORDED";
     public static final String CONFIRMED = "CONFIRMED";
     public static final String CANCELED = "CANCELED";
     public static final String PENDING = "PENDING";
@@ -64,17 +65,8 @@ public class Match {
     private String description;
 
     @Builder.Default
-    @Column(name = "cur_players")
-    private Integer curPlayers = 0;
-
-    @Builder.Default
     @Column(name = "status")
     private String status = PENDING;
-
-    @JsonIgnore
-    public Boolean isFullfilled() {
-        return this.curPlayers == this.noPlayers;
-    }
 
     @JsonIgnore
     public Boolean isConfirmed() {
@@ -86,20 +78,26 @@ public class Match {
         return this.status == CANCELED;
     }
 
+    @JsonIgnore
+    public Boolean isPending() {
+        return this.status == PENDING;
+    }
+
+    @JsonIgnore
+    public Boolean isPassed() {
+        return Instant.now().isAfter(this.date.plus(this.duration));
+    }
+
+    public void record() {
+        this.status = RECORDED;
+    }
+
     public void confirm() {
         this.status = CONFIRMED;
     }
 
     public void cancel() {
         this.status = CANCELED;
-    }
-
-    public void join() {
-        this.curPlayers++;
-    }
-
-    public void unjoin() {
-        this.curPlayers--;
     }
 
 }

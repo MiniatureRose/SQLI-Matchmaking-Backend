@@ -1,4 +1,4 @@
-package com.sqli.matchmaking.service.matchmaking;
+package com.sqli.matchmaking.service.teammaking.forms;
 
 import java.util.Collections;
 import java.util.List;
@@ -9,14 +9,15 @@ import org.springframework.stereotype.Service;
 import com.sqli.matchmaking.model.composite.Team;
 import com.sqli.matchmaking.model.composite.TeamUser;
 import com.sqli.matchmaking.model.standalone.User;
-import com.sqli.matchmaking.service.composite.TeamUserService;
+import com.sqli.matchmaking.service.composite.TeamService;
+import com.sqli.matchmaking.service.teammaking.TeamMaking;
 
 
 @Service
-public class RandomMaking extends MatchMaking {
+public class RandomMaking implements TeamMaking {
 
     @Autowired
-    private TeamUserService teamUserService;
+    private TeamService teamService;
     
     public void make(List<User> players, List<Team> teams) {
 
@@ -42,7 +43,7 @@ public class RandomMaking extends MatchMaking {
                 TeamUser el = TeamUser.builder()
                                 .user(player).team(teams.get(i))
                                 .build();
-                teamUserService.save(el);
+                teamService.save(el);
             }
 
         }

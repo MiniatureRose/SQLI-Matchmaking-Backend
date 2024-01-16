@@ -8,7 +8,7 @@
     <include file="test.changelog-sport.xml" relativeToChangelogFile="true"/>
     <include file="test.changelog-field.xml" relativeToChangelogFile="true"/>
     <include file="test.changelog-fieldsport.xml" relativeToChangelogFile="true"/>
-    <include file="test.changelog-Match.xml" relativeToChangelogFile="true"/>
+    <include file="test.changelog-match.xml" relativeToChangelogFile="true"/>
     <include file="test.changelog-matchuser.xml" relativeToChangelogFile="true"/>
     <include file="test.changelog-team.xml" relativeToChangelogFile="true"/>
     <include file="test.changelog-teamusers.xml" relativeToChangelogFile="true"/>

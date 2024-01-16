@@ -14,7 +14,7 @@ import lombok.Builder;
 @Entity
 @Data
 @Table(name = "teams")
-public class Team { 
+public final class Team { 
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,5 +26,9 @@ public class Team {
     @ManyToOne()
     @JoinColumn(name = "match_id")
     private Match match;
+
+    @Builder.Default
+    @Column(name = "score")
+    private int score = 0;
 
 }

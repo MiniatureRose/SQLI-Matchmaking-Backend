@@ -1,69 +1,79 @@
 package com.sqli.matchmaking.controller;
 
+// utils
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+// spring
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.sqli.matchmaking.dtos.RequestDTOs;
+import com.sqli.matchmaking.dtos.ResponseDTOs;
+import com.sqli.matchmaking.dtos.ResponseDTOs.TeamDetails;
+import com.sqli.matchmaking.dtos.ResponseDTOs.UserDetails;
+// entities
 import com.sqli.matchmaking.model.composite.*;
 import com.sqli.matchmaking.model.standalone.*;
-import com.sqli.matchmaking.request.DTOs;
+// services
+import com.sqli.matchmaking.service.auth.UserService;
 import com.sqli.matchmaking.service.composite.*;
-import com.sqli.matchmaking.service.matchmaking.*;
-import com.sqli.matchmaking.service.standalone.*;
+import com.sqli.matchmaking.service.playerranking.*;
+import com.sqli.matchmaking.service.playerranking.forms.DefaultRanking;
+import com.sqli.matchmaking.service.teammaking.*;
+import com.sqli.matchmaking.service.teammaking.forms.ManualMaking;
+import com.sqli.matchmaking.service.teammaking.forms.RandomMaking;
+
 
 
 @RestController
 @RequestMapping("match")
-public class MatchController {
+public final class MatchController {
 
     @Autowired
-    private MatchUserService matchUserService;
-    @Autowired
-    private TeamUserService teamUserService;
+    private TeamService teamService;
     @Autowired
     private MatchService matchService;
     @Autowired
-    private FieldSportService fsService;
+    private FieldSportService fieldSportService;
     @Autowired
     private UserService userService;
-    @Autowired
-    private FieldService fieldService;
-    @Autowired
-    private SportService sportService;
     @Autowired
     private RandomMaking randomMaking;
     @Autowired
     private ManualMaking manualMaking;
+    @Autowired
+    private DefaultRanking defaultRanking;
+
 
     /*
      * POST
      */
     @PostMapping("create")
-    public ResponseEntity<Object> createMatch(@RequestBody DTOs.Match request) {
+    public ResponseEntity<Object> createMatch(@RequestBody RequestDTOs.Match request) {
         // Check existence of Ids
         User organiser = userService.getById(request.getOrganizerId());
         if (organiser == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(Map.of("message", "User does not exist"));
         }
-        Field field = fieldService.getById(request.getFieldId());
+        Field field = fieldSportService.getFieldById(request.getFieldId());
         if (field == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(Map.of("message", "Field does not exist"));
         }
-        Sport sport = sportService.getById(request.getSportId());
+        Sport sport = fieldSportService.getSportById(request.getSportId());
         if (sport == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(Map.of("message", "Sport does not exist"));
         }
         // check is field does have the sport
-        if (!fsService.isSportInField(field, sport)) {
+        if (!fieldSportService.isSportInField(field, sport)) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(Map.of("message", "Selected sport cannot be played in selected field"));
         }
@@ -94,7 +104,7 @@ public class MatchController {
     }
 
     @PostMapping("join")
-    public ResponseEntity<Object> joinMatch(@RequestBody DTOs.MatchUser request) {
+    public ResponseEntity<Object> joinMatch(@RequestBody RequestDTOs.MatchUser request) {
         // Check Ids
         User player = userService.getById(request.getUserId());
         if (player == null) {
@@ -106,15 +116,15 @@ public class MatchController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(Map.of("message", "Match does not exist"));
         }
+        // Check status
+        if (!match.isPending()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(Map.of("message", "Match is either canceled or confirmed"));
+        }
         // Check if there is a place in match for player
-        if (match.isFullfilled()) {
+        if (matchService.isFullfilled(match)) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(Map.of("message", "Match is fullfilled"));
-        }
-        // Check if there match is confirmed
-        if (match.isConfirmed()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(Map.of("message", "Match is confirmed"));
         }
         // TODO: check if player is not playing another match in same date
         // Create MatchUser
@@ -124,7 +134,7 @@ public class MatchController {
                     .build();
         try {
             // Save it
-            matchUserService.save(el);
+            matchService.save(el);
             // Confirm
             return ResponseEntity.ok().body(Map.of("message", "Player joined match successfully!"));
         } catch (DataIntegrityViolationException e) {
@@ -137,8 +147,8 @@ public class MatchController {
     public ResponseEntity<Object> make(
         @RequestParam Long userId,
         @RequestParam Long matchId,
-        @RequestParam String how,
-        @RequestBody(required = false) DTOs.ManualMaking manualDTO) {
+        @RequestParam String model,
+        @RequestBody(required = false) RequestDTOs.ManualMaking manualDTO) {
         // Check Ids
         User user = userService.getById(userId);
         if (user == null) {
@@ -155,9 +165,14 @@ public class MatchController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(Map.of("message", "User is neither the organizer or an admin"));
         }
-        // Define how
-        MatchMaking service = null;
-        switch (how) {
+        // Check status
+        if (!match.isPending()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(Map.of("message", "Match is either canceled or confirmed"));
+        }
+        // Define making model
+        TeamMaking service = null;
+        switch (model) {
             case "random":
                 service = this.randomMaking;
                 break;
@@ -165,7 +180,7 @@ public class MatchController {
                 service = this.randomMaking;
                 break;
             case "manual":
-                //! must be required
+                //! dto must be required
                 service = this.manualMaking;
                 break;
             default:
@@ -174,15 +189,15 @@ public class MatchController {
 
         try {
             // Create teams
-            service.createTeams(match);
+            teamService.createTeams(match);
         } catch (DataIntegrityViolationException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(Map.of("error", "WEIRD : Cannot save team"));
         }
 
         try {
-            // Make the game!
-            service.makeJoin(match);
+            // Make match
+            matchService.makeTeams(match, service);
             // Confirm
             return ResponseEntity.ok().body(Map.of("message", "Making has well done!"));
         } catch (DataIntegrityViolationException e) {
@@ -192,7 +207,130 @@ public class MatchController {
 
     }
 
-    @PostMapping("confirm")
+    @PostMapping("record")
+    public ResponseEntity<Object> record(
+        @RequestParam Long recorderId,
+        @RequestParam String model,
+        @RequestBody List<RequestDTOs.TeamRecord> records) {
+        // Check Ids
+        User user = userService.getById(recorderId);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("message", "Player does not exist"));
+        }
+        // Check records
+        if (records.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("message", "No record given"));
+        }
+        // Get the match
+        Match match = teamService.getById(records.get(0).getTeamId()).getMatch();
+        assert match != null : "WEIRD : a stored team with match = null";
+        // Check authorities
+        if (!match.getOrganizer().equals(user) && !user.isAdmin()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(Map.of("message", "User is neither the organizer or an admin"));
+        }
+        // Check status
+        if (!match.isConfirmed()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(Map.of("message", "Match is not confirmed yet"));
+        }
+        // Check if match is played
+       if (!match.isPassed()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(Map.of("message", "Match is played or finished yet"));
+        }
+        // Check that All teams exist and refer to one match
+        for (RequestDTOs.TeamRecord record : records) {
+            // Check id
+            Team team = teamService.getById(record.getTeamId());
+            if (team == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", "Team does not exist"));
+            }
+            // Check reference
+            if (!team.getMatch().equals(match)) {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("message", "All teams must refer to one match"));
+            }
+        }
+        for (RequestDTOs.TeamRecord record : records) {
+            Team team = teamService.getById(record.getTeamId());
+            try {
+                // Set score
+                team.setScore(record.getScore());
+            } catch (DataIntegrityViolationException e) {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body(Map.of("error", "WEIRD : Cannot set a team score"));
+            }
+        }
+        // Define ranking model
+        PlayerRanking service = null;
+        switch (model) {
+            case "default":
+                service = this.defaultRanking;
+                break;
+            default:
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        try {
+            // Rank players
+            teamService.rankPlayers(match, service);
+        } catch (DataIntegrityViolationException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", "WEIRD : Cannot rank player"));
+        }
+        try {
+            // Record
+            match.record();
+            matchService.save(match);
+            // Confirm
+            return ResponseEntity.ok().body(Map.of("message", "Match recorded successfully!"));
+        } catch (DataIntegrityViolationException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", "WEIRD : Cannot set match as recorded"));
+        }
+    }
+
+
+    /*
+     * PUT
+     */
+    @PutMapping("setrank")
+    public ResponseEntity<Object> setRank(
+        @RequestParam Long adminId,
+        @RequestParam Long playerId,
+        @RequestParam Double newRank) {
+        // Check ids
+        User admin = userService.getById(adminId);
+        if (admin == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("message", "Setter does not exist"));
+        }
+        User player = userService.getById(playerId);
+        if (player == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("message", "Player does not exist"));
+        }
+        // Check authorities
+        if (!admin.isAdmin()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("message", "Setter is neither not an admin"));
+        }
+        try {
+            // Set the rank
+            player.setRank(newRank);
+            // Confirm
+            return ResponseEntity.ok().body(Map.of("message", "Rank updated successfully!"));
+        } catch (DataIntegrityViolationException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", "WEIRD : Cannot set rank"));
+        }
+    }
+    
+    @PutMapping("confirm")
     public ResponseEntity<Object> confirm(
         @RequestParam Long userId,
         @RequestParam Long matchId) {
@@ -212,8 +350,13 @@ public class MatchController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(Map.of("message", "User is neither the organizer or an admin"));
         }
+        // Check status
+        if (!match.isPending()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(Map.of("message", "Match is either canceled or already confirmed"));
+        }
         // Check if match is fullfield
-        if (match.isFullfilled() == false) {
+        if (matchService.isFullfilled(match) == false) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(Map.of("message", "Match is not fullfilled to be confirmed"));
         }
@@ -229,7 +372,7 @@ public class MatchController {
         }
     }
 
-    @PostMapping("cancel")
+    @PutMapping("cancel")
     public ResponseEntity<Object> cancel(
         @RequestParam Long userId,
         @RequestParam Long matchId) {
@@ -249,6 +392,11 @@ public class MatchController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(Map.of("message", "User is neither the organizer or an admin"));
         }
+        // Check status
+        if (!match.isPending()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(Map.of("message", "Match is either already canceled or confirmed"));
+        }
         try {
             // Cancel
             match.cancel();
@@ -261,6 +409,7 @@ public class MatchController {
         }
     }
 
+    
 
     /*
      * DELETE
@@ -311,13 +460,13 @@ public class MatchController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(Map.of("message", "Match does not exist"));
         }
-        // Check if there match is confirmed
-        if (match.isConfirmed()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(Map.of("message", "Match is confirmed"));
+        // Check status
+        if (!match.isPending()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(Map.of("message", "Match is either canceled or confirmed"));
         }
         // Get MatchUser
-        MatchUser el = matchUserService.getByMatchAndUser(match, player);
+        MatchUser el = matchService.getByMatchAndUser(match, player);
         // Check existence
         if (el == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -325,7 +474,7 @@ public class MatchController {
         }
         try {
             // Delete it
-            matchUserService.delete(el);
+            matchService.delete(el);
             // Confirm
             return ResponseEntity.ok().body(Map.of("message", "Player unjoined successfully!"));
         } catch (DataIntegrityViolationException e) {
@@ -335,32 +484,37 @@ public class MatchController {
     }
 
 
+
     /*
      * GET
      */
     @GetMapping("players")
-    public ResponseEntity<List<User>> getMatchPlayers(@RequestParam Long matchId) {
+    public ResponseEntity<List<ResponseDTOs.UserDetails>> getMatchPlayers(@RequestParam Long matchId) {
         // Check id
         Match match = matchService.getById(matchId);
         if (match == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         // Return
-        return ResponseEntity.ok(matchUserService.getMatchPlayers(match));
+        List<ResponseDTOs.UserDetails> ret = matchService.getMatchPlayers(match)
+            .stream().map(p -> new UserDetails(p)).collect(Collectors.toList());
+        return ResponseEntity.ok(ret);
     }
 
     @GetMapping("teams")
-    public ResponseEntity<List<List<User>>> getMatchTeams(@RequestParam Long matchId) {
+    public ResponseEntity<List<TeamDetails>> getMatchTeams(@RequestParam Long matchId) {
         // Check id
         Match match = matchService.getById(matchId);
         if (match == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         // Return
-        return ResponseEntity.ok(teamUserService.getMatchTeams(match));
+        List<Team> teams = teamService.getMatchTeams(match);
+        List<TeamDetails> ret = teams.stream().map(t -> new TeamDetails(teamService.getTeamPlayers(t), t))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(ret);
     }
 
-    
     @GetMapping("id")
     public ResponseEntity<Match> getMatchById(@RequestParam Long matchId) {
         // Check id
@@ -371,7 +525,6 @@ public class MatchController {
         // Return
         return ResponseEntity.ok(match);
     }
-
 
     @GetMapping("")
     public ResponseEntity<List<Match>> geMatches(
@@ -387,7 +540,7 @@ public class MatchController {
 
         List<Match> all = null;
         if (userId == null && myMatches == null) {
-            all = matchService.getMatches();
+            all = matchService.getAll();
             filterByTime(all, type);
         }
         else if (userId != null && myMatches != null) {
@@ -395,9 +548,9 @@ public class MatchController {
             if (user == null) 
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             if (myMatches)
-                all = matchUserService.getUserMatches(user);
+                all = matchService.getUserMatches(user);
             else 
-                all = matchUserService.getUserNoMatches(user);
+                all = matchService.getUserNoMatches(user);
             filterByTime(all, type);
         }
         else {
@@ -410,16 +563,16 @@ public class MatchController {
         else if (filter != null && id != null) {
             switch (filter) {
                 case "sport":
-                    Sport sport = sportService.getById(id);
+                    Sport sport = fieldSportService.getSportById(id);
                     if (sport == null) 
                         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-                    all = matchService.getMatchesBySport(all, sport);
+                    matchService.filterMatchesBySport(all, sport);
                     break;
                 case "field":
-                    Field field = fieldService.getById(id);
+                    Field field = fieldSportService.getFieldById(id);
                     if (field == null) 
                         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-                    all = matchService.getMatchesByField(all, field);
+                    matchService.filterMatchesByField(all, field);
                     break;
                 default:
                     return new ResponseEntity<>(HttpStatus.BAD_REQUEST);

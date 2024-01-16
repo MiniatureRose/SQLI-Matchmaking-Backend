@@ -12,7 +12,7 @@ import lombok.Builder;
 @Data
 @Entity
 @Table(name = "fields")
-public class Field {
+public final class Field {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

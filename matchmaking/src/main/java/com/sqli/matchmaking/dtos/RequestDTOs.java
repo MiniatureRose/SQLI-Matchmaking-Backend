@@ -1,11 +1,11 @@
-package com.sqli.matchmaking.request;
+package com.sqli.matchmaking.dtos;
 
 import java.time.Duration;
 import java.time.Instant;
 
 import lombok.Data;
 
-public class DTOs {
+public final class RequestDTOs {
 
     @Data
     public static final class Signup {
@@ -21,7 +21,6 @@ public class DTOs {
     public static final class Signin {
         private final String email;
         private final String password;
-
     }
 
     @Data
@@ -54,6 +53,13 @@ public class DTOs {
         private final String name;
         private final Long matchId;
     }
+
+    @Data
+    public static final class TeamRecord {
+        private final Long teamId;
+        private final int score;
+    }
+
 
     @Data
     public static final class ManualMaking {

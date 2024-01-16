@@ -12,7 +12,7 @@ import lombok.Builder;
 @Entity
 @Data
 @Table(name = "sports")
-public class Sport {
+public final class Sport {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

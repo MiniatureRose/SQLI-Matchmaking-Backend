@@ -16,7 +16,7 @@ import lombok.Builder;
 @Table(name = "matchusers", uniqueConstraints = {
     @UniqueConstraint(columnNames = {"player_id", "match_id"})
 })
-public class MatchUser {
+public final class MatchUser {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

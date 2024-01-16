@@ -17,7 +17,7 @@ import lombok.Builder;
 @Table(name = "fieldsports", uniqueConstraints = {
     @UniqueConstraint(columnNames = {"field_id", "sport_id"})
 })
-public class FieldSport {
+public final class FieldSport {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
