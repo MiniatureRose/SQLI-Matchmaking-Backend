@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.sqli.matchmaking.dtos.RequestDTOs;
 import com.sqli.matchmaking.dtos.ResponseDTOs;
+import com.sqli.matchmaking.dtos.RequestDTOs.TeamPlayers;
 import com.sqli.matchmaking.dtos.ResponseDTOs.TeamDetails;
 import com.sqli.matchmaking.dtos.ResponseDTOs.UserDetails;
 // entities
@@ -26,7 +27,6 @@ import com.sqli.matchmaking.service.composite.*;
 import com.sqli.matchmaking.service.playerranking.*;
 import com.sqli.matchmaking.service.playerranking.forms.DefaultRanking;
 import com.sqli.matchmaking.service.teammaking.*;
-import com.sqli.matchmaking.service.teammaking.forms.ManualMaking;
 import com.sqli.matchmaking.service.teammaking.forms.RandomMaking;
 
 
@@ -45,8 +45,6 @@ public final class MatchController {
     private UserService userService;
     @Autowired
     private RandomMaking randomMaking;
-    @Autowired
-    private ManualMaking manualMaking;
     @Autowired
     private DefaultRanking defaultRanking;
 
@@ -143,12 +141,11 @@ public final class MatchController {
         }
     }
 
-    @PostMapping("make")
-    public ResponseEntity<Object> make(
+    @PostMapping("make/auto")
+    public ResponseEntity<Object> autoMaking(
         @RequestParam Long userId,
         @RequestParam Long matchId,
-        @RequestParam String model,
-        @RequestBody(required = false) RequestDTOs.ManualMaking manualDTO) {
+        @RequestParam String model) {
         // Check Ids
         User user = userService.getById(userId);
         if (user == null) {
@@ -179,10 +176,6 @@ public final class MatchController {
             case "smart":
                 service = this.randomMaking;
                 break;
-            case "manual":
-                //! dto must be required
-                service = this.manualMaking;
-                break;
             default:
                 return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
@@ -205,6 +198,78 @@ public final class MatchController {
                     .body(Map.of("error", "WEIRD : Cannot make match"));
         }
 
+    }
+
+    @PostMapping("make/manual")
+    public ResponseEntity<Object> manualMaking(
+        @RequestParam Long userId,
+        @RequestParam Long matchId,
+        @RequestBody List<RequestDTOs.TeamPlayers> manualDTO) {
+        // Check Ids
+        User user = userService.getById(userId);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("message", "Maker does not exist"));
+        }
+        Match match = matchService.getById(matchId);
+        if (match == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("message", "Match does not exist"));
+        }
+        // Check authorities
+        if (!match.getOrganizer().equals(user) && !user.isAdmin()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("message", "User is neither the organizer or an admin"));
+        }
+        // Check status
+        if (!match.isPending()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(Map.of("message", "Match is either canceled or confirmed"));
+        }
+        // Check number of teams
+        if (match.getSport().getNoTeams() != manualDTO.size()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(Map.of("message", "Number of teams is not respected"));
+        }
+        // Check players Ids
+        for (TeamPlayers tp : manualDTO) {
+            for (Long playerId : tp.getPalyers()) {
+                User player = userService.getById(playerId);
+                if (player == null) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("message", "Player does not exist"));
+                }
+            }
+        }
+        for (TeamPlayers tp : manualDTO) {
+            // Create team
+            Team team = Team.builder()
+                .name(tp.getTeamName())
+                .match(match)
+                .build();
+            try {
+                // Save it
+                teamService.save(team);
+            } catch (DataIntegrityViolationException e) {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body(Map.of("error", "WEIRD : Cannot save team"));
+            }
+            // Join all team players
+            for (Long playerId : tp.getPalyers()) {
+                User player = userService.getById(playerId);
+                // Create join
+                TeamUser join = TeamUser.builder().team(team).user(player).build();
+                try {
+                    // Save it
+                    teamService.save(join);
+                } catch (DataIntegrityViolationException e) {
+                    return ResponseEntity.status(HttpStatus.CONFLICT)
+                            .body(Map.of("error", "WEIRD : Some playe cannot join team"));
+                }
+            }
+        }
+        // Confirm
+        return ResponseEntity.ok().body(Map.of("message", "Manual Making has well done!"));
     }
 
     @PostMapping("record")

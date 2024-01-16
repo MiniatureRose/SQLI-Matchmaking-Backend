@@ -2,6 +2,7 @@ package com.sqli.matchmaking.dtos;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 
 import lombok.Data;
 
@@ -42,17 +43,6 @@ public final class RequestDTOs {
         private final Long matchId;
     }
 
-    @Data
-    public static final class TeamUser {
-        private final Long userId;
-        private final Long teamId;
-    }
-
-    @Data
-    public static final class Team {
-        private final String name;
-        private final Long matchId;
-    }
 
     @Data
     public static final class TeamRecord {
@@ -60,12 +50,14 @@ public final class RequestDTOs {
         private final int score;
     }
 
-
     @Data
-    public static final class ManualMaking {
-
+    public static final class TeamPlayers {
+        private final String teamName;
+        private final List<Long> palyers;
     }
 
+
+    
     @Data
     public static final class FieldSport {
         private final Long fieldId;

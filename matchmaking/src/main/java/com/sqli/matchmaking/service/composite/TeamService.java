@@ -116,6 +116,10 @@ public class TeamService {
         return repository.findById(id).orElse(null);
     }
 
+    public void save(Team el) {
+        repository.save(el);
+    }
+
     public void save(TeamUser el) {
         teamUserRepository.save(el);
     }
