@@ -13,7 +13,7 @@ import com.sqli.matchmaking.model.composite.*;
 import com.sqli.matchmaking.model.standalone.*;
 import com.sqli.matchmaking.service.auth.UserService;
 import com.sqli.matchmaking.service.composite.*;
-import com.sqli.matchmaking.service.teammaking.forms.RandomMaking;
+import com.sqli.matchmaking.service.teammaking.forms.*;
 
 ////import java.nio.file.Path;
 ////import java.nio.file.Paths;
@@ -30,6 +30,8 @@ public class DatabaseInitializer implements ApplicationRunner {
 
     @Autowired
     private RandomMaking random;
+    @Autowired
+    private EvenMaking even;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
@@ -91,6 +93,7 @@ public class DatabaseInitializer implements ApplicationRunner {
                         .phone("0123456789")
                         .profileImage("/assets/Player6.svg")
                         .role("USER")
+                        .rank(500.)
                         .build(),
                 User.builder().firstName("Mouad")
                         .lastName("Boumour")
@@ -99,6 +102,7 @@ public class DatabaseInitializer implements ApplicationRunner {
                         .phone("0123456789")
                         .profileImage("/assets/Player2.svg")
                         .role("ADMIN")
+                        .rank(940.)
                         .build(),
                 User.builder().firstName("Salim")
                         .lastName("Bekkari")
@@ -208,7 +212,7 @@ public class DatabaseInitializer implements ApplicationRunner {
         teamService.createTeams(lhobl);
         matchService.makeTeams(lhobl, random);
         teamService.createTeams(lhaya);
-        matchService.makeTeams(lhaya, random);
+        matchService.makeTeams(lhaya, even);
     }
 }
 

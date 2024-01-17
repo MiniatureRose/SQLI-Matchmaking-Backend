@@ -302,10 +302,12 @@ public final class MatchController {
                 .body(Map.of("message", "Match is not confirmed yet"));
         }
         // Check if match is played
+        /* 
        if (!match.isPassed()) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(Map.of("message", "Match is played or finished yet"));
         }
+        */
         // Check that All teams exist and refer to one match
         for (RequestDTOs.TeamRecord record : records) {
             // Check id
