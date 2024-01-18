@@ -19,6 +19,7 @@ import com.sqli.matchmaking.model.composite.*;
 import com.sqli.matchmaking.model.standalone.*;
 // services
 import com.sqli.matchmaking.service.auth.UserService;
+import com.sqli.matchmaking.service.standalone.NotificationService;
 import com.sqli.matchmaking.service.composite.*;
 import com.sqli.matchmaking.service.playerranking.*;
 import com.sqli.matchmaking.service.teammaking.*;
@@ -40,6 +41,8 @@ public class MatchController {
     private FieldSportService fieldSportService;
     @Autowired
     private UserService userService;
+    @Autowired
+    private NotificationService notificationService;
     @Autowired
     private RandomMaking randomMaking;
     @Autowired
@@ -131,6 +134,7 @@ public class MatchController {
         }
         // Make match
         matchService.makeTeams(match, service);
+        notificationService.SendTeamsCreatedNotifications(match);
         // Change status
         matchService.form(match);
         // Confirm
@@ -299,6 +303,8 @@ public class MatchController {
         userService.onlyOrganizerAndAdmin(user, match);
         // Check status and cancel
         matchService.cancel(match);
+        // Send notification
+        notificationService.SendCanceledMatchNotifications(match);
         // Confirm
         return ResponseEntity.ok().body(Map.of("message", "Match canceled successfully!"));
     }

@@ -12,5 +12,6 @@
     <include file="test.changelog-matchuser.xml" relativeToChangelogFile="true"/>
     <include file="test.changelog-team.xml" relativeToChangelogFile="true"/>
     <include file="test.changelog-teamusers.xml" relativeToChangelogFile="true"/>
+    <include file="test.changelog-notification.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>
