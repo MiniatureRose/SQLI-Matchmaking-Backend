@@ -12,9 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.sqli.matchmaking.model.composite.*;
 import com.sqli.matchmaking.model.standalone.*;
-import com.sqli.matchmaking.request.DTOs;
 import com.sqli.matchmaking.service.composite.*;
-import com.sqli.matchmaking.service.matchmaking.*;
 import com.sqli.matchmaking.service.standalone.*;
 
 @RestController
@@ -29,9 +27,21 @@ public class NotificationController {
         return ResponseEntity.ok(this.notificationService.getNotificationsByUser(userId));
     }
 
-    @PutMapping("/{notificationId}")
-    public ResponseEntity<Notification> markAsRead(@PathVariable Long notificationId) {
+    @PutMapping("/MAR")
+    public ResponseEntity<String> markAsRead(@RequestParam Long notificationId) {
         return ResponseEntity.ok(this.notificationService.markAsRead(notificationId));
+    }
+
+    @PostMapping("/deleteNotification")
+    public ResponseEntity<String> deleteNotification(@RequestParam Long notificationId){
+        notificationService.deleteNotification(notificationId);
+        return ResponseEntity.ok("notification deleted successfully");
+    }
+
+    @PutMapping("/MAAR")
+    public ResponseEntity<String> markAllAsRead(@RequestParam Long userId){
+        notificationService.markAllAsRead(userId);
+        return ResponseEntity.ok("All notifications marked successfully ");
     }
 
 }

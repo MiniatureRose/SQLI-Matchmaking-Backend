@@ -15,6 +15,9 @@
             <column name="match_id" type="BIGINT">
                 <constraints nullable="true"/>
             </column>
+            <column name="score" type="BIGINT">
+                <constraints nullable="true"/>
+            </column>
         </createTable>
 
         <addForeignKeyConstraint

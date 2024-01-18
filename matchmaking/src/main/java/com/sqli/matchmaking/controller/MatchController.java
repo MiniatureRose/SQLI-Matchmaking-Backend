@@ -23,6 +23,7 @@ import com.sqli.matchmaking.model.composite.*;
 import com.sqli.matchmaking.model.standalone.*;
 // services
 import com.sqli.matchmaking.service.auth.UserService;
+import com.sqli.matchmaking.service.standalone.NotificationService;
 import com.sqli.matchmaking.service.composite.*;
 import com.sqli.matchmaking.service.playerranking.*;
 import com.sqli.matchmaking.service.playerranking.forms.DefaultRanking;
@@ -43,6 +44,8 @@ public final class MatchController {
     private FieldSportService fieldSportService;
     @Autowired
     private UserService userService;
+    @Autowired
+    private NotificationService notificationService;
     @Autowired
     private RandomMaking randomMaking;
     @Autowired
@@ -183,6 +186,7 @@ public final class MatchController {
         try {
             // Create teams
             teamService.createTeams(match);
+            notificationService.SendTeamsCreatedNotifications(match);
         } catch (DataIntegrityViolationException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(Map.of("error", "WEIRD : Cannot save team"));
@@ -467,6 +471,7 @@ public final class MatchController {
         try {
             // Cancel
             match.cancel();
+            notificationService.SendCanceledMatchNotifications(match);
             matchService.save(match);
             // Confirm
             return ResponseEntity.ok().body(Map.of("message", "Match canceled successfully!"));

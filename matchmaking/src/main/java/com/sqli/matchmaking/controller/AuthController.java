@@ -63,8 +63,8 @@ public final class AuthController {
     @PostMapping("/signup")
     public ResponseEntity<Object> signup(@RequestBody RequestDTOs.Signup request) {
         if (userService.emailAlreadyExists(request.getEmail())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(Map.of("message", "Email already exits"));
+            return ResponseEntity.ok()
+                .body(Map.of("message", "Email deja pris!"));
         }
         // TODO: Check the structure
         // TODO: send email verification
