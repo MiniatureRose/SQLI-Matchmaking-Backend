@@ -4,13 +4,17 @@ import java.util.Collections;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.sqli.matchmaking.exception.Exceptions;
 import com.sqli.matchmaking.model.composite.Team;
 import com.sqli.matchmaking.model.composite.TeamUser;
 import com.sqli.matchmaking.model.standalone.User;
 import com.sqli.matchmaking.service.composite.TeamService;
 import com.sqli.matchmaking.service.teammaking.TeamMaking;
+
 
 
 @Service
@@ -19,6 +23,7 @@ public class RandomMaking implements TeamMaking {
     @Autowired
     private TeamService teamService;
     
+    @Transactional
     public void make(List<User> players, List<Team> teams) {
 
         // Shuffle the list to randomize the order of players
@@ -43,7 +48,11 @@ public class RandomMaking implements TeamMaking {
                 TeamUser el = TeamUser.builder()
                                 .user(player).team(teams.get(i))
                                 .build();
-                teamService.save(el);
+                try {
+                    teamService.save(el);
+                } catch (DataIntegrityViolationException e) {
+                    throw new Exceptions.EntityCannotBeSaved("TeamUser");
+                }        
             }
 
         }

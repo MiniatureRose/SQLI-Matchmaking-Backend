@@ -209,10 +209,15 @@ public class DatabaseInitializer implements ApplicationRunner {
         Match lhaya = matchService.getRepository().findMatchByName("match dial l7aya").get(0);
         Match lhobl = matchService.getRepository().findMatchByName("match dial lhobl").get(0);
 
-        teamService.createTeams(lhobl);
+        // Close matches
+        matchService.close(lhobl);
+        matchService.close(lhaya);
+        // Make matches
         matchService.makeTeams(lhobl, random);
-        teamService.createTeams(lhaya);
         matchService.makeTeams(lhaya, even);
+        // Form matches
+        matchService.form(lhobl);
+        matchService.form(lhaya);
     }
 }
 

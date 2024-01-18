@@ -35,11 +35,15 @@ public final class ResponseDTOs {
 
     @Value
     public static final class TeamDetails {
+        private final Long id;
         private final String name;
+        private final Integer score;
         private final List<UserDetails> players;
     
         public TeamDetails(List<User> players, Team team) {
+            this.id = team.getId();
             this.name = team.getName();
+            this.score = team.getScore();
             this.players = players.stream().map(p -> new UserDetails(p))
                 .collect(Collectors.toList());
         }

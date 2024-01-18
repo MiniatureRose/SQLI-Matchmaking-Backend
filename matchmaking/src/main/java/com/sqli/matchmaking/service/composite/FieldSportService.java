@@ -4,8 +4,11 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
+import com.sqli.matchmaking.exception.Exceptions;
+import com.sqli.matchmaking.exception.Exceptions.*;
 import com.sqli.matchmaking.model.composite.FieldSport;
 import com.sqli.matchmaking.model.standalone.Field;
 import com.sqli.matchmaking.model.standalone.Sport;
@@ -47,11 +50,17 @@ public class FieldSportService {
     }
 
     public Field getFieldById(Long id) {
-        return fieldRepository.findById(id).orElse(null);
+        return fieldRepository.findById(id)
+            .orElseThrow(() -> 
+                new EntityNotFound("Field", "id", id));
     }
 
     public void save(Field el) {
-        fieldRepository.save(el);
+        try {
+            fieldRepository.save(el);
+        } catch (DataIntegrityViolationException e) {
+            throw new Exceptions.EntityCannotBeSaved("Field");
+        }
     }
 
     /* 
@@ -62,18 +71,28 @@ public class FieldSportService {
     }
 
     public Sport getSportById(Long id) {
-        return sportRepository.findById(id).orElse(null);
+        return sportRepository.findById(id)
+            .orElseThrow(() -> 
+            new EntityNotFound("Sport", "id", id));
     }
 
     public void save(Sport el) {
-        sportRepository.save(el);
+        try {
+            sportRepository.save(el);
+        } catch (DataIntegrityViolationException e) {
+            throw new Exceptions.EntityCannotBeSaved("Sport");
+        }
     }
 
     /* 
      * Basic : FieldSport
      */
     public void save(FieldSport el) {
-        fsRepository.save(el);
+        try {
+            fsRepository.save(el);
+        } catch (DataIntegrityViolationException e) {
+            throw new Exceptions.EntityCannotBeSaved("FieldSport");
+        }
     }
 
 }

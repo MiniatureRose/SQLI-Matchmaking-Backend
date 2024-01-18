@@ -29,6 +29,6 @@ public final class Team {
 
     @Builder.Default
     @Column(name = "score")
-    private int score = 0;
+    private Integer score = -1;
 
 }

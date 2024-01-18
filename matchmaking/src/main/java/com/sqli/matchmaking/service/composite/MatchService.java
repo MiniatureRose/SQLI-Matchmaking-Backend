@@ -5,8 +5,11 @@ import java.time.Instant;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.sqli.matchmaking.exception.Exceptions;
 import com.sqli.matchmaking.model.composite.*;
 import com.sqli.matchmaking.model.standalone.*;
 import com.sqli.matchmaking.repository.composite.MatchRepository;
@@ -35,6 +38,8 @@ public class MatchService {
      * Making
      */
     public void makeTeams(Match match, TeamMaking service) {
+        // Create teams
+        teamService.createTeams(match);
         // Get teams for this match
         List<Team> teams = teamService.getMatchTeams(match);
         // Get all match player
@@ -48,7 +53,7 @@ public class MatchService {
     }
 
     public void setCureentPlayers(List<Match> matches) {
-        for (Match match : matches) setCureentPlayers(match);
+        for (Match match : matches) this.setCureentPlayers(match);
     }
 
 
@@ -72,6 +77,27 @@ public class MatchService {
             });
     }
 
+    /* 
+     * Assertions
+     */
+    public void assertMatchStatus(Match match, String status, Boolean bool) {
+        if (match.getStatus().equals(status) != bool) {
+            throw new Exceptions.MatchMustBeOnStatus(status, bool);
+        }
+    }
+
+    public void assertIsPassed(Match match, Boolean bool) {
+        if (match.isPassed() != bool) {
+            throw new Exceptions.MatchMustBeOnStatus("passed", bool);
+        }
+    }
+
+    public void assertIsFullfiled(Match match, Boolean bool) {
+        if (this.isFullfilled(match) != bool) {
+            throw new Exceptions.MatchMustBeOnStatus("fullfilled", bool);
+        }
+    }
+
 
     /* 
      * Filtering
@@ -92,10 +118,6 @@ public class MatchService {
         all.removeIf(match -> match.getDate().isBefore(Instant.now()));
     }
 
-    public MatchUser getByMatchAndUser(Match match, User user){
-        return matchUserRepository.findByMatchAndUser(match, user);
-    }
-
     public List<User> getMatchPlayers(Match match) {
         return matchUserRepository.findUsersByMatch(match);
     }
@@ -108,6 +130,14 @@ public class MatchService {
         return matchUserRepository.findMatchOfNoUser(user);
     }
 
+    public MatchUser getByMatchAndUser(Match match, User user){
+        return matchUserRepository.findByMatchAndUser(match, user)
+            .orElseThrow(() -> 
+                new Exceptions.TwoEntitiesLinkNotFound(
+                    "Match", "User", match.getId(), user.getId())
+            );
+    }
+
 
     /* 
      * Basic 
@@ -117,30 +147,132 @@ public class MatchService {
     }
 
     public Match getById(Long id) {
-        return repository.findById(id).orElse(null);
+        return repository.findById(id)
+            .orElseThrow(() -> 
+                new Exceptions.EntityNotFound("Match", "id", id));
     }
 
     public void save(Match el) {
-        repository.save(el);
+        try {
+            repository.save(el);
+        } catch (DataIntegrityViolationException e) {
+            throw new Exceptions.EntityCannotBeSaved("Match");
+        }
     }
 
     public void save(MatchUser el) {
-        matchUserRepository.save(el);
+        try {
+            matchUserRepository.save(el);
+        } catch (DataIntegrityViolationException e) {
+            throw new Exceptions.EntityCannotBeSaved("MatchUser");
+        }
     }
 
+    @Transactional
+    public void pend(Match el) {
+        try {
+            el.setStatus(Match.PENDING);
+        } catch (DataIntegrityViolationException e) {
+            throw new Exceptions.EntityCannotBeUpdated(
+                "Match", "status -> pending");
+        }
+        // Save it
+        this.save(el);
+    }
+
+    @Transactional
+    public void confirm(Match el) {
+        try {
+            el.setStatus(Match.CONFIRMED);
+        } catch (DataIntegrityViolationException e) {
+            throw new Exceptions.EntityCannotBeUpdated(
+                "Match", "status -> confirmed");
+        }
+        // Save it
+        this.save(el);
+    }
+
+    @Transactional
+    public void cancel(Match el) {
+        try {
+            el.setStatus(Match.CANCELED);
+        } catch (DataIntegrityViolationException e) {
+            throw new Exceptions.EntityCannotBeUpdated(
+                "Match", "status -> canceled");
+        }
+        // Save it
+        this.save(el);
+    }
+
+    @Transactional
+    public void record(Match el) {
+        try {
+            el.setStatus(Match.RECORDED);
+        } catch (DataIntegrityViolationException e) {
+            throw new Exceptions.EntityCannotBeUpdated(
+                "Match", "status -> recorded");
+        }
+        // Save it
+        this.save(el);
+    }
+
+    @Transactional
+    public void close(Match el) {
+        try {
+            el.setStatus(Match.CLOSED);
+        } catch (DataIntegrityViolationException e) {
+            throw new Exceptions.EntityCannotBeUpdated(
+                "Match", "status -> close");
+        }
+        // Save it
+        this.save(el);
+    }
+
+    @Transactional
+    public void form(Match el) {
+        try {
+            el.setStatus(Match.FORMED);
+        } catch (DataIntegrityViolationException e) {
+            throw new Exceptions.EntityCannotBeUpdated(
+                "Match", "status -> form");
+        }
+        // Save it
+        this.save(el);
+    }
+    
+
+    @Transactional
     public void delete(Match el) {
         // Remove all matchUsers having el
         List<MatchUser> matchUsers = matchUserRepository.findByMatch(el);
-        matchUserRepository.deleteAll(matchUsers);
+        try {
+            matchUserRepository.deleteAll(matchUsers);
+        } catch (DataIntegrityViolationException e) {
+            throw new Exceptions.EntityCannotBeDeleted("All MatchUsers");
+        }
         // Select all teams having el
         List<Team> teams = teamService.getMatchTeams(el);
-        for (Team team : teams) teamService.delete(team);
+        for (Team team : teams) {
+            try {
+                teamService.delete(team);
+            } catch (DataIntegrityViolationException e) {
+                throw new Exceptions.EntityCannotBeDeleted("Team");
+            }
+        }
         // Then remove el
-        repository.delete(el);
+        try {
+            repository.delete(el);
+        } catch (DataIntegrityViolationException e) {
+            throw new Exceptions.EntityCannotBeDeleted("Match");
+        }
     }
 
     public void delete(MatchUser el) {
-        matchUserRepository.delete(el);
+        try {
+            matchUserRepository.delete(el);
+        } catch (DataIntegrityViolationException e) {
+            throw new Exceptions.EntityCannotBeDeleted("MatchUser");
+        }
     }
 
 }

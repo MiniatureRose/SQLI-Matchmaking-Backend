@@ -1,8 +1,11 @@
 package com.sqli.matchmaking.service.composite;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.sqli.matchmaking.exception.Exceptions;
 import com.sqli.matchmaking.model.composite.Match;
 import com.sqli.matchmaking.model.composite.Team;
 import com.sqli.matchmaking.model.composite.TeamUser;
@@ -33,6 +36,7 @@ public class TeamService {
     /* 
      * Auto
      */
+    @Transactional
     public void createTeams(Match match) {
         // Create and save teams for this match
         int noTeams = match.getSport().getNoTeams();
@@ -43,7 +47,11 @@ public class TeamService {
                         .match(match)
                         .build();
             // Save it
-            repository.save(team);
+            try {
+                repository.save(team);
+            } catch (DataIntegrityViolationException e) {
+                throw new Exceptions.EntityCannotBeSaved("Team");
+            }
         }
     }
 
@@ -100,6 +108,12 @@ public class TeamService {
         return repository.findByMatch(match);
     }
 
+    @Transactional
+    public void deleteMatchTeams(Match match) {
+        List<Team> teams = this.getMatchTeams(match);
+        teams.forEach(team -> this.delete(team));
+    }
+
     public List<User> getTeamPlayers(Team team) {
         return teamUserRepository.findUsersByTeam(team);
     }
@@ -113,23 +127,50 @@ public class TeamService {
     }
 
     public Team getById(Long id) {
-        return repository.findById(id).orElse(null);
+        return repository.findById(id)
+            .orElseThrow(() -> 
+                new Exceptions.EntityNotFound("Team", "id", id));
     }
 
     public void save(Team el) {
-        repository.save(el);
+        try {
+            repository.save(el);
+        } catch (DataIntegrityViolationException e) {
+            throw new Exceptions.EntityCannotBeSaved("Team");
+        }
     }
 
     public void save(TeamUser el) {
-        teamUserRepository.save(el);
+        try {
+            teamUserRepository.save(el);
+        } catch (DataIntegrityViolationException e) {
+            throw new Exceptions.EntityCannotBeSaved("TeamUser");
+        }
     }
 
+    public void updateScore(Team el, int score) {
+        try {
+            el.setScore(score);
+        } catch (DataIntegrityViolationException e) {
+            throw new Exceptions.EntityCannotBeUpdated("Team", "score");
+        }
+    }
+
+    @Transactional
     public void delete(Team el) {
         // Remove all teamusers having el
         List<TeamUser> teamUsers = teamUserRepository.findByTeam(el);
-        teamUserRepository.deleteAll(teamUsers);
+        try {
+            teamUserRepository.deleteAll(teamUsers);
+        } catch (DataIntegrityViolationException e) {
+            throw new Exceptions.EntityCannotBeDeleted("All TeamUser");
+        }
         // Then remove team
-        repository.delete(el);
+        try {
+            repository.delete(el);
+        } catch (DataIntegrityViolationException e) {
+            throw new Exceptions.EntityCannotBeDeleted("Team");
+        }
     }
 
 }

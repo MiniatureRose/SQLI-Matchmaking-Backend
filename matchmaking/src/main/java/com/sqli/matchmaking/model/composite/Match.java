@@ -27,8 +27,10 @@ public final class Match {
     // status
     public static final String RECORDED = "RECORDED";
     public static final String CONFIRMED = "CONFIRMED";
-    public static final String CANCELED = "CANCELED";
+    public static final String FORMED = "FORMED";
+    public static final String CLOSED = "CLOSED";
     public static final String PENDING = "PENDING";
+    public static final String CANCELED = "CANCELED";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -71,36 +73,10 @@ public final class Match {
     @Builder.Default
     private Integer curPlayers = 0;
 
-    @JsonIgnore
-    public Boolean isConfirmed() {
-        return this.status.equals(CONFIRMED);
-    }
-
-    @JsonIgnore
-    public Boolean isCanceled() {
-        return this.status.equals(CANCELED);
-    }
-
-    @JsonIgnore
-    public Boolean isPending() {
-        return this.status.equals(PENDING);
-    }
 
     @JsonIgnore
     public Boolean isPassed() {
         return Instant.now().isAfter(this.date.plus(this.duration));
-    }
-
-    public void record() {
-        this.status = RECORDED;
-    }
-
-    public void confirm() {
-        this.status = CONFIRMED;
-    }
-
-    public void cancel() {
-        this.status = CANCELED;
     }
 
 }

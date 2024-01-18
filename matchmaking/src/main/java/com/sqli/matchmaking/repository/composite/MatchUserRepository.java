@@ -1,6 +1,7 @@
 package com.sqli.matchmaking.repository.composite;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -19,7 +20,7 @@ public interface MatchUserRepository extends JpaRepository<MatchUser, Long> {
     List<MatchUser> findByMatch(Match match);
     
     @Query("SELECT mu FROM MatchUser mu WHERE mu.match= :match and mu.user= :user")
-    MatchUser findByMatchAndUser(@Param("match") Match match, @Param("user") User user );
+    Optional<MatchUser> findByMatchAndUser(@Param("match") Match match, @Param("user") User user );
 
     @Query("SELECT m.match FROM MatchUser m WHERE m.user = :player")
     List<Match> findMatchOfUser(@Param("player") User player);

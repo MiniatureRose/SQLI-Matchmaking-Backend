@@ -1,12 +1,15 @@
 package com.sqli.matchmaking.service.teammaking.forms;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import com.sqli.matchmaking.exception.Exceptions;
 import com.sqli.matchmaking.model.composite.Team;
 import com.sqli.matchmaking.model.composite.TeamUser;
 import com.sqli.matchmaking.model.standalone.User;
@@ -21,6 +24,7 @@ public class EvenMaking implements TeamMaking {
     @Autowired
     private TeamService teamService;
 
+    @Transactional
     public void make(List<User> players, List<Team> teams) {
 
         // Map players by rank
@@ -42,7 +46,11 @@ public class EvenMaking implements TeamMaking {
                 TeamUser el = TeamUser.builder()
                         .user(player).team(teams.get(i))
                         .build();
-                teamService.save(el);
+                try {
+                    teamService.save(el);
+                } catch (DataIntegrityViolationException e) {
+                    throw new Exceptions.EntityCannotBeSaved("TeamUser");
+                }    
             }
         }
         
@@ -56,7 +64,6 @@ public class EvenMaking implements TeamMaking {
                 return player;
             }
         }
-        System.out.println("hj_n\n\n\nhjhjk");
         return null;
     }
 }
