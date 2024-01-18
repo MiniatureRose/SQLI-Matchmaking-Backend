@@ -15,7 +15,6 @@ import com.sqli.matchmaking.model.standalone.*;
 import com.sqli.matchmaking.repository.composite.MatchRepository;
 import com.sqli.matchmaking.repository.composite.MatchUserRepository;
 import com.sqli.matchmaking.service.teammaking.TeamMaking;
-import com.sqli.matchmaking.service.standalone.NotificationService;
 
 import lombok.Getter;
 
