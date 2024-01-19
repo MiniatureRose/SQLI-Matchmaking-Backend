@@ -1,4 +1,4 @@
-package com.sqli.matchmaking.controller;
+package com.sqli.matchmaking.controller.standalone;
 
 import java.util.List;
 
@@ -10,30 +10,30 @@ import com.sqli.matchmaking.model.standalone.*;
 import com.sqli.matchmaking.service.standalone.*;
 
 @RestController
-@RequestMapping("/notifications")
+@RequestMapping("notification")
 public class NotificationController {
 
     @Autowired
     private NotificationService notificationService;
 
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<Notification>> getNotificationsByUser(@PathVariable Long userId) {
+    @GetMapping("user")
+    public ResponseEntity<List<Notification>> getNotificationsByUser(@RequestParam Long userId) {
         return ResponseEntity.ok(this.notificationService.getNotificationsByUser(userId));
     }
 
-    @PutMapping("/MAR")
-    public ResponseEntity<String> markAsRead(@RequestParam Long notificationId) {
-        return ResponseEntity.ok(this.notificationService.markAsRead(notificationId));
-    }
-
-    @PostMapping("/deleteNotification")
-    public ResponseEntity<String> deleteNotification(@RequestParam Long notificationId){
+    @DeleteMapping()
+    public ResponseEntity<Object> deleteNotification(@RequestParam Long notificationId){
         notificationService.deleteNotification(notificationId);
         return ResponseEntity.ok("notification deleted successfully");
     }
 
-    @PutMapping("/MAAR")
-    public ResponseEntity<String> markAllAsRead(@RequestParam Long userId){
+    @PutMapping("MAR")
+    public ResponseEntity<Object> markAsRead(@RequestParam Long notificationId) {
+        return ResponseEntity.ok(this.notificationService.markAsRead(notificationId));
+    }
+
+    @PutMapping("MAAR")
+    public ResponseEntity<Object> markAllAsRead(@RequestParam Long userId){
         notificationService.markAllAsRead(userId);
         return ResponseEntity.ok("All notifications marked successfully ");
     }

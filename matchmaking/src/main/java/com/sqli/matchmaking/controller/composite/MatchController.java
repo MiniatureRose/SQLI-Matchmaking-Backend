@@ -1,18 +1,17 @@
-package com.sqli.matchmaking.controller;
+package com.sqli.matchmaking.controller.composite;
 
 // utils
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 // spring
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
-
+// dtos
 import com.sqli.matchmaking.dtos.*;
 // entities
 import com.sqli.matchmaking.model.composite.*;
@@ -25,7 +24,6 @@ import com.sqli.matchmaking.service.playerranking.*;
 import com.sqli.matchmaking.service.teammaking.*;
 import com.sqli.matchmaking.service.playerranking.forms.*;
 import com.sqli.matchmaking.service.teammaking.forms.*;
-
 
 
 
@@ -236,23 +234,6 @@ public class MatchController {
     /*
      * PUT
      */
-    @PutMapping("setrank")
-    @Transactional
-    public ResponseEntity<Object> setRank(
-        @RequestParam Long adminId,
-        @RequestParam Long playerId,
-        @RequestParam Double newRank) {
-        // Check ids
-        User admin = userService.getById(adminId);
-        User player = userService.getById(playerId);
-        // Check authorities
-        userService.onlyAdmin(admin);
-        // Set the rank 
-        userService.updateRank(player, newRank);
-        // Confirm
-        return ResponseEntity.ok().body(Map.of("message", "Rank updated successfully!"));
-    }
-    
     @PutMapping("confirm")
     @Transactional
     public ResponseEntity<Object> confirm(

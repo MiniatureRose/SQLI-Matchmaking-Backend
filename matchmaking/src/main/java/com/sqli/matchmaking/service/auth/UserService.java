@@ -14,8 +14,8 @@ import lombok.Getter;
 
 import java.util.List;
 
-@Service
 @Getter
+@Service
 public class UserService {
 
     /* 
@@ -28,7 +28,7 @@ public class UserService {
     /* 
      * Booleans
      */
-    public boolean emailAlreadyExists(String email) {
+    public Boolean emailAlreadyExists(String email) {
         User find = repository.findByEmail(email).orElse(null);
         return find != null;
     }
