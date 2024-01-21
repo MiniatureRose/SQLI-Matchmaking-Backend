@@ -3,15 +3,24 @@ package com.sqli.matchmaking.dtos;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.sqli.matchmaking.model.composite.Team;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import com.sqli.matchmaking.model.extension.Match;
+import com.sqli.matchmaking.model.extension.Team;
 import com.sqli.matchmaking.model.standalone.User;
+import com.sqli.matchmaking.service.extension.TeamService;
 
 import lombok.Value;
 
+@Component
 public final class ResponseDTOs {
 
+    @Autowired
+    private TeamService teamService;
+
     @Value
-    public static final class UserDetails {
+    public final class UserDetails {
         private final Long id;
         private final String firstName;
         private final String lastName;
@@ -34,17 +43,29 @@ public final class ResponseDTOs {
     }
 
     @Value
-    public static final class TeamDetails {
+    public final class TeamDetails {
         private final Long id;
         private final String name;
         private final Integer score;
         private final List<UserDetails> players;
     
-        public TeamDetails(List<User> players, Team team) {
+        public TeamDetails(Team team) {
             this.id = team.getId();
             this.name = team.getName();
             this.score = team.getScore();
-            this.players = players.stream().map(p -> new UserDetails(p))
+            this.players = teamService.getTeamPlayers(team).stream().map(p -> new UserDetails(p))
+                .collect(Collectors.toList());
+        }
+    }
+
+    @Value
+    public final class MatchDetails {
+        private final Match match;
+        private final List<TeamDetails> teams;
+    
+        public MatchDetails(Match match) {
+            this.match = match;
+            this.teams = teamService.getMatchTeams(match).stream().map(t -> new TeamDetails(t))
                 .collect(Collectors.toList());
         }
     }

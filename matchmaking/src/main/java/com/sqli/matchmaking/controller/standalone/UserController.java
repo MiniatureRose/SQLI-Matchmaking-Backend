@@ -13,8 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import com.sqli.matchmaking.dtos.*;
 // entities
 import com.sqli.matchmaking.model.standalone.*;
-// services
-import com.sqli.matchmaking.service.auth.UserService;
+import com.sqli.matchmaking.service.standalone.UserService;
 
 
 @RestController
@@ -23,6 +22,9 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private ResponseDTOs responseDTOs;
     
     /* 
      * GET
@@ -31,7 +33,7 @@ public class UserController {
     public ResponseEntity<List<ResponseDTOs.UserDetails>> getAllUsers() {
         List<User> all = userService.getAll();
         List<ResponseDTOs.UserDetails> ret = all
-            .stream().map(p -> new ResponseDTOs.UserDetails(p))
+            .stream().map(p -> responseDTOs.new UserDetails(p))
             .collect(Collectors.toList());
         return ResponseEntity.ok(ret);
     }
@@ -39,7 +41,7 @@ public class UserController {
     @GetMapping("id")
     public ResponseEntity<ResponseDTOs.UserDetails> getUserById(@RequestParam Long id) {
         User el = userService.getById(id);
-        return ResponseEntity.ok(new ResponseDTOs.UserDetails(el));
+        return ResponseEntity.ok(responseDTOs.new UserDetails(el));
     }
 
 

@@ -9,11 +9,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 // dtos
 import com.sqli.matchmaking.dtos.*;
-// entities
-import com.sqli.matchmaking.model.composite.*;
+import com.sqli.matchmaking.model.associative.FieldSport;
 import com.sqli.matchmaking.model.standalone.*;
-// services
-import com.sqli.matchmaking.service.composite.*;
+import com.sqli.matchmaking.service.standalone.FieldSportService;
 
 
 @RestController

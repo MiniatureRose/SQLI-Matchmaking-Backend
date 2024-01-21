@@ -9,11 +9,14 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
-import com.sqli.matchmaking.model.composite.*;
+import com.sqli.matchmaking.model.associative.FieldSport;
+import com.sqli.matchmaking.model.associative.MatchUser;
+import com.sqli.matchmaking.model.extension.*;
 import com.sqli.matchmaking.model.standalone.*;
-import com.sqli.matchmaking.service.auth.UserService;
-import com.sqli.matchmaking.service.composite.*;
-import com.sqli.matchmaking.service.teammaking.forms.*;
+import com.sqli.matchmaking.service.extension.*;
+import com.sqli.matchmaking.service.extension.teammaking.forms.*;
+import com.sqli.matchmaking.service.standalone.FieldSportService;
+import com.sqli.matchmaking.service.standalone.UserService;
 
 ////import java.nio.file.Path;
 ////import java.nio.file.Paths;
