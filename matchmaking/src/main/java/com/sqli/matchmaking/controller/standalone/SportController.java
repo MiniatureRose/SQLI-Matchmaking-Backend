@@ -6,12 +6,13 @@ import java.util.Map;
 // spring
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 // dtos
 import com.sqli.matchmaking.dtos.*;
 // entities
 import com.sqli.matchmaking.model.standalone.*;
-import com.sqli.matchmaking.service.standalone.FieldSportService;
+import com.sqli.matchmaking.service.standalone.SportService;
 
 
 @RestController
@@ -19,19 +20,20 @@ import com.sqli.matchmaking.service.standalone.FieldSportService;
 public class SportController {
 
     @Autowired
-    private FieldSportService fsService;
+    private SportService fsService;
 
     /* 
      * sport
      */
     @GetMapping("all")
     public List<Sport> getAllSports() {
-        return fsService.getAllSports();
+        return fsService.getAll();
     }
 
     @GetMapping("id")
-    public ResponseEntity<Sport> getSportById(@RequestParam Long id) {
-        Sport el = fsService.getSportById(id);
+    public ResponseEntity<Sport> getSportById(
+        @RequestParam @NonNull Long id) {
+        Sport el = fsService.getById(id);
         return ResponseEntity.ok(el);
     }
 

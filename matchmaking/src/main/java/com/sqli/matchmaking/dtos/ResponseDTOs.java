@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import com.sqli.matchmaking.model.extension.Match;
 import com.sqli.matchmaking.model.extension.Team;
 import com.sqli.matchmaking.model.standalone.User;
+import com.sqli.matchmaking.service.extension.MatchService;
 import com.sqli.matchmaking.service.extension.TeamService;
 
 import lombok.Value;
@@ -18,6 +19,9 @@ public final class ResponseDTOs {
 
     @Autowired
     private TeamService teamService;
+
+    @Autowired
+    private MatchService matchService;
 
     @Value
     public final class UserDetails {
@@ -61,10 +65,12 @@ public final class ResponseDTOs {
     @Value
     public final class MatchDetails {
         private final Match match;
+        private Integer curPlayers;
         private final List<TeamDetails> teams;
     
         public MatchDetails(Match match) {
             this.match = match;
+            this.curPlayers = matchService.getMatchPlayers(match).size();
             this.teams = teamService.getMatchTeams(match).stream().map(t -> new TeamDetails(t))
                 .collect(Collectors.toList());
         }

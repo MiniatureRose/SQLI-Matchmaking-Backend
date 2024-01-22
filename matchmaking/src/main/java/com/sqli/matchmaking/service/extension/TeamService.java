@@ -2,11 +2,11 @@ package com.sqli.matchmaking.service.extension;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.sqli.matchmaking.exception.Exceptions;
+import com.sqli.matchmaking.exception.Exceptions.EntityIsNull;
 import com.sqli.matchmaking.model.associative.TeamUser;
 import com.sqli.matchmaking.model.extension.Match;
 import com.sqli.matchmaking.model.extension.Team;
@@ -38,7 +38,7 @@ public class TeamService {
      * Auto
      */
     @Transactional
-    public void createTeams(@NonNull Match match) {
+    public void createTeams(Match match) {
         // Create and save teams for this match
         int noTeams = match.getSport().getNoTeams();
         for (int i = 0; i < noTeams; i++) {
@@ -47,6 +47,9 @@ public class TeamService {
                         .name(String.valueOf(i))
                         .match(match)
                         .build();
+            if (team == null) {
+                throw new EntityIsNull("Team");
+            }
             // Save it
             try {
                 repository.save(team);
@@ -112,7 +115,12 @@ public class TeamService {
     @Transactional
     public void deleteMatchTeams(Match match) {
         List<Team> teams = this.getMatchTeams(match);
-        teams.forEach(team -> this.delete(team));
+        teams.forEach(team -> {
+            if (team == null) {
+                throw new EntityIsNull("Team");
+            }
+            this.delete(team);
+        });
     }
 
     public List<User> getTeamPlayers(Team team) {
@@ -127,13 +135,19 @@ public class TeamService {
         return repository.findAll();
     }
 
-    public Team getById(@NonNull Long id) {
+    public Team getById(Long id) {
+        if (id == null) {
+            throw new EntityIsNull("Team");
+        }
         return repository.findById(id)
             .orElseThrow(() -> 
                 new Exceptions.EntityNotFound("Team", "id", id));
     }
 
-    public void save(@NonNull Team el) {
+    public void save(Team el) {
+        if (el == null) {
+            throw new EntityIsNull("Team");
+        }
         try {
             repository.save(el);
         } catch (DataIntegrityViolationException e) {
@@ -141,7 +155,10 @@ public class TeamService {
         }
     }
 
-    public void save(@NonNull TeamUser el) {
+    public void save(TeamUser el) {
+        if (el == null) {
+            throw new EntityIsNull("TeamUser");
+        }
         try {
             teamUserRepository.save(el);
         } catch (DataIntegrityViolationException e) {
@@ -158,9 +175,15 @@ public class TeamService {
     }
 
     @Transactional
-    public void delete(@NonNull Team el) {
+    public void delete(Team el) {
+        if (el == null) {
+            throw new Exceptions.EntityIsNull("Team");
+        }
         // Remove all teamusers having el
         List<TeamUser> teamUsers = teamUserRepository.findByTeam(el);
+        if (teamUsers == null) { 
+            throw new EntityIsNull("List<TeamUser>");
+        }
         try {
             teamUserRepository.deleteAll(teamUsers);
         } catch (DataIntegrityViolationException e) {

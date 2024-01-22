@@ -1,26 +1,26 @@
 package com.sqli.matchmaking.data;
 
+// utils
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
-
+// spring
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
-
-import com.sqli.matchmaking.model.associative.FieldSport;
-import com.sqli.matchmaking.model.associative.MatchUser;
+// entities
+import com.sqli.matchmaking.model.associative.*;
 import com.sqli.matchmaking.model.extension.*;
 import com.sqli.matchmaking.model.standalone.*;
+// services
 import com.sqli.matchmaking.service.extension.*;
 import com.sqli.matchmaking.service.extension.teammaking.forms.*;
-import com.sqli.matchmaking.service.standalone.FieldSportService;
-import com.sqli.matchmaking.service.standalone.UserService;
+import com.sqli.matchmaking.service.standalone.*;
 
-////import java.nio.file.Path;
-////import java.nio.file.Paths;
+
 import lombok.RequiredArgsConstructor;
+
 
 @Component
 @RequiredArgsConstructor
@@ -29,7 +29,9 @@ public class DatabaseInitializer implements ApplicationRunner {
     private final TeamService teamService;
     private final UserService userService;
     private final MatchService matchService;
-    private final FieldSportService fieldSportsService;
+    private final SportService sportService;
+    private final FieldService fieldService;
+    private final NotificationService notifService;
 
     @Autowired
     private RandomMaking random;
@@ -38,14 +40,19 @@ public class DatabaseInitializer implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-
+        // Delete teams
         teamService.getTeamUserRepository().deleteAll();
-        matchService.getMatchUserRepository().deleteAll();
         teamService.getRepository().deleteAll();
+        // Delete matches
+        matchService.getMatchUserRepository().deleteAll();
         matchService.getRepository().deleteAll();
-        fieldSportsService.getFsRepository().deleteAll();
-        fieldSportsService.getFieldRepository().deleteAll();
-        fieldSportsService.getSportRepository().deleteAll();
+        // Delete fields and sports
+        fieldService.getFsRepository().deleteAll();
+        fieldService.getRepository().deleteAll();
+        sportService.getRepository().deleteAll();
+        // Delete notifications
+        notifService.getRepository().deleteAll();
+        // Delete users
         userService.getRepository().deleteAll();
         System.out.println("Data has been successfully deleted");
 
@@ -63,7 +70,7 @@ public class DatabaseInitializer implements ApplicationRunner {
         Sport basketball = Sport.builder().name("basketball").noTeams(2).build();
         Sport volleyball = Sport.builder().name("volleyball").noTeams(2).build();
 
-        fieldSportsService.getSportRepository().saveAll(Arrays.asList(
+        sportService.saveAll(Arrays.asList(
                 football, basketball, volleyball));
 
         // fields
@@ -75,11 +82,11 @@ public class DatabaseInitializer implements ApplicationRunner {
                 .noPlayers(22)
                 .build();
 
-        fieldSportsService.getFieldRepository().saveAll(Arrays.asList(
+        fieldService.saveAll(Arrays.asList(
                 francoisBord, doyenBruce));
 
         // sports in fields
-        fieldSportsService.getFsRepository().saveAll(Arrays.asList(
+        fieldService.saveAllFieldSport(Arrays.asList(
                 FieldSport.builder().field(francoisBord).sport(football).build(),
                 FieldSport.builder().field(francoisBord).sport(volleyball).build(),
                 FieldSport.builder().field(doyenBruce).sport(football).build(),
@@ -88,7 +95,7 @@ public class DatabaseInitializer implements ApplicationRunner {
 
     private final void insertPlayers() throws Exception {
 
-        userService.getRepository().saveAll(Arrays.asList(
+        userService.saveAll(Arrays.asList(
                 User.builder().firstName("Oussama")
                         .lastName("Zobid")
                         .email("oussama@example.com")
@@ -153,12 +160,12 @@ public class DatabaseInitializer implements ApplicationRunner {
 
         User zombid = userService.getByEmail("oussama@example.com");
         User mouad = userService.getByEmail("mouad@example.com");
-        Field fb = fieldSportsService.getFieldRepository().findByName("Francois Bord").get();
-        Field db = fieldSportsService.getFieldRepository().findByName("Doyen Bruce").get();
-        Sport foot = fieldSportsService.getSportRepository().findByName("football").get();
-        Sport basket = fieldSportsService.getSportRepository().findByName("basketball").get();
+        Field fb = fieldService.getRepository().findByName("Francois Bord").get();
+        Field db = fieldService.getRepository().findByName("Doyen Bruce").get();
+        Sport foot = sportService.getRepository().findByName("football").get();
+        Sport basket = sportService.getRepository().findByName("basketball").get();
 
-        matchService.getRepository().saveAll(Arrays.asList(
+        matchService.saveAll(Arrays.asList(
                 Match.builder().name("match dial lhobl")
                         .organizer(zombid)
                         .field(fb)
@@ -194,7 +201,7 @@ public class DatabaseInitializer implements ApplicationRunner {
         Match lhobl = matchService.getRepository().findMatchByName("match dial lhobl").get(0);
 
         // Join
-        matchService.getMatchUserRepository().saveAll(Arrays.asList(
+        matchService.saveAllJoins(Arrays.asList(
                 // Match 1
                 MatchUser.builder().match(lhaya).user(mouad).build(),
                 MatchUser.builder().match(lhaya).user(anas).build(),

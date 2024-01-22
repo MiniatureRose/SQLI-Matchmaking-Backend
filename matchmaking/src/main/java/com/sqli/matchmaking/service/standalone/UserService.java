@@ -2,11 +2,11 @@ package com.sqli.matchmaking.service.standalone;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.sqli.matchmaking.exception.Exceptions;
+import com.sqli.matchmaking.exception.Exceptions.EntityIsNull;
 import com.sqli.matchmaking.model.extension.Match;
 import com.sqli.matchmaking.model.standalone.User;
 import com.sqli.matchmaking.repository.standalone.UserRepository;
@@ -42,7 +42,10 @@ public class UserService {
         return repository.findAll();
     }
 
-    public User getById(@NonNull Long id) {
+    public User getById(Long id) {
+        if (id == null) {
+            throw new EntityIsNull("User");
+        }
         return repository.findById(id)
             .orElseThrow(() -> 
                 new Exceptions.EntityNotFound("User", "id", id));
@@ -54,12 +57,19 @@ public class UserService {
                 new Exceptions.EntityNotFound("User", "email", email));
     }
 
-    public void save(@NonNull User el) {
+    public void save(User el) {
+        if (el == null) {
+            throw new EntityIsNull("User");
+        }
         try {
             repository.save(el);
         } catch (DataIntegrityViolationException e) {
             throw new Exceptions.EntityCannotBeSaved("User");
         }
+    }
+
+        public void saveAll(List<User> list) {
+        list.forEach(el -> this.save(el));
     }
 
     @Transactional

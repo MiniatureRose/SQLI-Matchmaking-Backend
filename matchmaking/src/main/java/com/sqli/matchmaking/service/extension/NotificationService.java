@@ -2,14 +2,19 @@ package com.sqli.matchmaking.service.extension;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.lang.NonNull;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.scheduling.annotation.Scheduled;
 
-import com.sqli.matchmaking.repository.standalone.UserRepository;
+import com.sqli.matchmaking.service.standalone.UserService;
+
+import lombok.Getter;
+
 import com.sqli.matchmaking.repository.associative.MatchUserRepository;
 import com.sqli.matchmaking.repository.extension.MatchRepository;
 import com.sqli.matchmaking.repository.extension.NotificationRepository;
+import com.sqli.matchmaking.exception.Exceptions;
+import com.sqli.matchmaking.exception.Exceptions.EntityIsNull;
 import com.sqli.matchmaking.model.extension.*;
 import com.sqli.matchmaking.model.standalone.*;
 
@@ -19,27 +24,28 @@ import java.time.Instant;
 import java.util.List;
 
 @Service
+@Getter
 public class NotificationService {
 
     @Autowired
-    private NotificationRepository notificationRepository;
+    private NotificationRepository repository;
 
     @Autowired
     private MatchRepository matchRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-    
     @Autowired
     private MatchUserRepository matchUserRepository;
 
     @Autowired
+    private UserService userService;
+    @Autowired
     private MatchService matchService;
 
     private Set<Match> Notifyedupcomingmatches = new HashSet<>();
+
+
     
-    public List<Notification> getNotificationsByUser(Long userId) {
-        return notificationRepository.findByUserId(userId);
+    public List<Notification> getNotificationsByUser(User user) {
+        return repository.findByUser(user);
     }
 
     @Scheduled(fixedRate = 3000) 
@@ -52,55 +58,57 @@ public class NotificationService {
         for (Match match : upcomingMatches) {
             if(!Notifyedupcomingmatches.contains(match)){
                 List<User> usersToNotify = this.matchService.getMatchPlayers(match);
-
                 for (User user : usersToNotify) {
                     String message = "Le match " + match.getId() + " commence dans moins de 24 heures.";
-                    createNotification(user.getId(), message, Instant.now());
+                    Notification el = this.create(user, message, Instant.now());
+                    this.save(el);
                 }
                 Notifyedupcomingmatches.add(match);
             }
         }
     }
 
-    public void SendCanceledMatchNotifications(Match match){
+    public void sendCanceledMatchNotifications(Match match){
         List<User> usersToNotify = this.matchService.getMatchPlayers(match);
         for (User user : usersToNotify) {
             String message = "Le match " + match.getId() + " est annulé.";
-            createNotification(user.getId(), message, Instant.now());
+            Notification el = this.create(user, message, Instant.now());
+            this.save(el);
             }
         }
 
-    public void SendTeamsCreatedNotifications(Match match){
+    public void sendTeamsCreatedNotifications(Match match){
         List<User> usersToNotify = this.matchService.getMatchPlayers(match);
             for (User user : usersToNotify) {
                 String message = "Les equipes pour le match" + match.getId() + " sont crées.";
-                createNotification(user.getId(), message, Instant.now());
+                Notification el = this.create(user, message, Instant.now());
+                this.save(el);
             }
     }
 
-    public void SendKickedOutNotifications(User user, Match match){
+    public void sendKickedOutNotifications(User user, Match match){
         String message = "Vous avez été retiré du match" + match.getId();
-        createNotification(user.getId(), message, Instant.now());
+        Notification el = this.create(user, message, Instant.now());
+        this.save(el);
     }
 
-    @Scheduled(fixedRate = 24 * 60 * 60 * 1000) //1 jour
-    public void SendSuggestionsNotifications(){
-        for(User user : userRepository.findAll()){
-            if( !IsPlayingNextWeek(user.getId())){
-                String message = user.getFirstName()+", ne manquez pas les matches de la semaine prochaine ! Inscrivez-vous dès maintenant";
-                createNotification(user.getId(), message, Instant.now());
+    @Scheduled(fixedRate = 24 * 60 * 60 * 1000) // 1 day
+    public void sendSuggestionsNotifications() {
+        List<User> allUsers = userService.getAll();
+        allUsers.forEach(user -> {
+            if (!isPlayingNextWeek(user)) {
+                String message = user.getFirstName() + ", ne manquez pas les matches de la semaine prochaine ! Inscrivez-vous dès maintenant";
+                Notification el = this.create(user, message, Instant.now());
+                this.save(el);
             }
-        }
+        });
     }
 
-    
-
-    public boolean IsPlayingNextWeek(Long userId) {
-    
+    public Boolean isPlayingNextWeek(User user) {
         Instant currentInstant = Instant.now();
         Instant startOfNextWeek = currentInstant.plusSeconds(604800); 
         Instant endOfNextWeek = startOfNextWeek.plusSeconds(518400); 
-        List<Match> userMatchesForNextWeek = matchUserRepository.findMatchOfUserForWeek(userId, startOfNextWeek, endOfNextWeek);
+        List<Match> userMatchesForNextWeek = matchUserRepository.findMatchOfUserForWeek(user, startOfNextWeek, endOfNextWeek);
         if (!userMatchesForNextWeek.isEmpty()) {
             return true; 
         } else {
@@ -109,39 +117,70 @@ public class NotificationService {
     }
 
 
-    public Notification createNotification(Long userId, String message, Instant dateCreated ) {
-        Notification notification = new Notification();
-        notification.setUserId(userId);
-        notification.setDateCreated(dateCreated);
-        notification.setMessage(message);
-        notification.setRead(false);
-
-
-        return notificationRepository.save(notification);
-    }
-
-    public String markAsRead(@NonNull Long id) {
-        Notification notification = notificationRepository.findById(id).orElse(null);
-        if (notification != null) {
-            notification.setRead(true);
-            notificationRepository.save(notification);
-            return "MarkedAsRead";
+    public void markAsRead(Notification el) {
+        try {
+            // Set
+            el.setIsRead(true);
+        } catch (DataIntegrityViolationException e) {
+            throw new Exceptions.EntityCannotBeUpdated(
+                "Notification", "isRead -> true");
         }
-        return "notification not found";
+        // Save
+        this.save(el);
     }
 
-    public void markAllAsRead(Long userId){
-        List<Notification> notifications = notificationRepository.findByUserId(userId);
+    public void markAllAsRead(User user){
+        List<Notification> notifications = this.getNotificationsByUser(user);
         for(Notification notification: notifications){
-            markAsRead(notification.getId());
+            markAsRead(notification);
         }
     }
-    
-    public void deleteNotification(@NonNull Long id){
-        Notification notification = notificationRepository.findById(id).orElse(null);
-        if (notification != null) {
-            notificationRepository.delete(notification);
+
+    /*
+     * Basic
+     */
+    public Notification getById(Long id) {
+        if (id == null) {
+            throw new EntityIsNull("Notification id");
         }
+        return repository.findById(id)
+            .orElseThrow(() -> 
+                new Exceptions.EntityNotFound("Notification", "id", id)
+            );
+    }
+
+    public void save(Notification el) {
+        if (el == null) {
+            throw new EntityIsNull("Notification");
+        }
+        try {
+            // Save
+            repository.save(el);
+        } catch (DataIntegrityViolationException e) {
+            throw new Exceptions.EntityCannotBeSaved("Notification");
+        }
+    }
+
+    public void delete(Notification el){
+        if (el == null) {
+            throw new EntityIsNull("Notification");
+        }
+        try {
+            // Delete
+            repository.delete(el);
+         } catch (DataIntegrityViolationException e) {
+             throw new Exceptions.EntityCannotBeDeleted("Notification");
+         }
+    }
+
+    public Notification create(User user, String message, Instant dateCreated ) {
+        // Build
+        Notification el = Notification.builder()
+            .user(user)
+            .dateCreated(dateCreated)
+            .message(message)
+            .build();
+        return el;
     }
 
 }

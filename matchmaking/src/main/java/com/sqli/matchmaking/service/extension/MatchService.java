@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,7 +38,7 @@ public class MatchService {
     /* 
      * Making
      */
-    public void makeTeams(@NonNull Match match, TeamMaking service) {
+    public void makeTeams(Match match, TeamMaking service) {
         // Create teams
         teamService.createTeams(match);
         // Get teams for this match
@@ -48,14 +47,6 @@ public class MatchService {
         List<User> players = this.getMatchPlayers(match);
         // Make the game!
         service.make(players, teams);
-    }
-
-    public void setCureentPlayers(Match match) {
-        match.setCurPlayers(this.getMatchPlayers(match).size());
-    }
-
-    public void setCureentPlayers(List<Match> matches) {
-        for (Match match : matches) this.setCureentPlayers(match);
     }
 
 
@@ -148,13 +139,19 @@ public class MatchService {
         return repository.findAll();
     }
 
-    public Match getById(@NonNull Long id) {
+    public Match getById(Long id) {
+        if (id == null) {
+            throw new Exceptions.EntityIsNull("Match id");
+        }
         return repository.findById(id)
             .orElseThrow(() -> 
                 new Exceptions.EntityNotFound("Match", "id", id));
     }
 
-    public void save(@NonNull Match el) {
+    public void save(Match el) {
+        if (el == null) {
+            throw new Exceptions.EntityIsNull("Match");
+        }
         try {
             repository.save(el);
         } catch (DataIntegrityViolationException e) {
@@ -162,12 +159,23 @@ public class MatchService {
         }
     }
 
-    public void save(@NonNull MatchUser el) {
+    public void saveAll(List<Match> list) {
+        list.forEach(el -> this.save(el));
+    }
+
+    public void save(MatchUser el) {
+        if (el == null) {
+            throw new Exceptions.EntityIsNull("MatchUser");
+        }
         try {
             matchUserRepository.save(el);
         } catch (DataIntegrityViolationException e) {
             throw new Exceptions.EntityCannotBeSaved("MatchUser");
         }
+    }
+
+    public void saveAllJoins(List<MatchUser> list) {
+        list.forEach(el -> this.save(el));
     }
 
     @Transactional
@@ -244,9 +252,15 @@ public class MatchService {
     
 
     @Transactional
-    public void delete(@NonNull Match el) {
+    public void delete(Match el) {
+        if (el == null) {
+            throw new Exceptions.EntityIsNull("Match");
+        }
         // Remove all matchUsers having el
         List<MatchUser> matchUsers = matchUserRepository.findByMatch(el);
+        if (matchUsers == null) {
+            throw new Exceptions.EntityIsNull("List<MatchUser>");
+        }
         try {
             matchUserRepository.deleteAll(matchUsers);
         } catch (DataIntegrityViolationException e) {
@@ -255,6 +269,9 @@ public class MatchService {
         // Select all teams having el
         List<Team> teams = teamService.getMatchTeams(el);
         for (Team team : teams) {
+            if (team == null) {
+                throw new Exceptions.EntityIsNull("Team");
+            }
             try {
                 teamService.delete(team);
             } catch (DataIntegrityViolationException e) {
@@ -269,7 +286,10 @@ public class MatchService {
         }
     }
 
-    public void delete(@NonNull MatchUser el) {
+    public void delete(MatchUser el) {
+        if (el == null) {
+            throw new Exceptions.EntityIsNull("MatchUser");
+        }
         try {
             matchUserRepository.delete(el);
         } catch (DataIntegrityViolationException e) {

@@ -52,4 +52,10 @@ public final class Exceptions {
         }
     }
 
+    public static final class EntityIsNull extends RuntimeException {
+        public EntityIsNull(String entityName) {
+            super(entityName + " is null");
+        }
+    }
+
 }

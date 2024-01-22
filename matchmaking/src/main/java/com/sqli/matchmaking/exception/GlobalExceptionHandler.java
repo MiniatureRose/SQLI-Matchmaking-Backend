@@ -58,4 +58,10 @@ public class GlobalExceptionHandler {
             .body(Map.of("error", ex.getMessage()));
     }
 
+    @ExceptionHandler(Exceptions.EntityIsNull.class)
+    public ResponseEntity<Object> handleEntityIsNull(Exceptions.EntityIsNull ex) {
+        return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE)
+            .body(Map.of("error", ex.getMessage()));
+    }
+
 }

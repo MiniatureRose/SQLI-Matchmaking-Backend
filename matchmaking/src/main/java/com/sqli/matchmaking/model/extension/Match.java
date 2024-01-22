@@ -1,7 +1,6 @@
 package com.sqli.matchmaking.model.extension;
 
 import java.time.Instant;
-import java.util.List;
 import java.time.Duration;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -70,9 +69,6 @@ public final class Match {
     @Builder.Default
     @Column(name = "status")
     private String status = PENDING;
-
-    @Builder.Default
-    private Integer curPlayers = 0;
 
 
     @JsonIgnore

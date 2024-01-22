@@ -1,7 +1,5 @@
 package com.sqli.matchmaking.model.extension;
 
-
-
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.AllArgsConstructor;

@@ -6,12 +6,13 @@ import java.util.Map;
 // spring
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 // dtos
 import com.sqli.matchmaking.dtos.*;
 import com.sqli.matchmaking.model.associative.FieldSport;
 import com.sqli.matchmaking.model.standalone.*;
-import com.sqli.matchmaking.service.standalone.FieldSportService;
+import com.sqli.matchmaking.service.standalone.*;
 
 
 @RestController
@@ -19,19 +20,22 @@ import com.sqli.matchmaking.service.standalone.FieldSportService;
 public class FieldController {
 
     @Autowired
-    private FieldSportService fsService;
+    private FieldService fsService;
+
+    @Autowired
+    private SportService sportService;
     
     /* 
      * GET
      */
     @GetMapping("all")
     public List<Field> getAllFields() {
-        return fsService.getAllFields();
+        return fsService.getAll();
     }
 
     @GetMapping("id")
-    public ResponseEntity<Field> getFieldById(@RequestParam Long id) {
-        Field el = fsService.getFieldById(id);
+    public ResponseEntity<Field> getFieldById(@RequestParam @NonNull Long id) {
+        Field el = fsService.getById(id);
         return ResponseEntity.ok(el);
     }
 
@@ -55,8 +59,8 @@ public class FieldController {
      */
     @PostMapping("fieldsport")
     public ResponseEntity<Object> createFieldSport(@RequestBody RequestDTOs.FieldSport request) {
-        Field field = fsService.getFieldById(request.getFieldId());
-        Sport sport = fsService.getSportById(request.getSportId());
+        Field field = fsService.getById(request.getFieldId());
+        Sport sport = sportService.getById(request.getSportId());
         FieldSport el = FieldSport.builder()
                 .field(field)
                 .sport(sport)

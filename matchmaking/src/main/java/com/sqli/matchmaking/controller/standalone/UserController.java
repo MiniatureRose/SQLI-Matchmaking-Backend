@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 // spring
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 // dtos
@@ -39,7 +40,8 @@ public class UserController {
     }
 
     @GetMapping("id")
-    public ResponseEntity<ResponseDTOs.UserDetails> getUserById(@RequestParam Long id) {
+    public ResponseEntity<ResponseDTOs.UserDetails> getUserById(
+        @RequestParam @NonNull Long id) {
         User el = userService.getById(id);
         return ResponseEntity.ok(responseDTOs.new UserDetails(el));
     }
@@ -51,9 +53,9 @@ public class UserController {
     @PutMapping("setrank")
     @Transactional
     public ResponseEntity<Object> setRank(
-        @RequestParam Long adminId,
-        @RequestParam Long playerId,
-        @RequestParam Double newRank) {
+        @RequestParam @NonNull Long adminId,
+        @RequestParam @NonNull Long playerId,
+        @RequestParam @NonNull Double newRank) {
         // Check ids
         User admin = userService.getById(adminId);
         User player = userService.getById(playerId);

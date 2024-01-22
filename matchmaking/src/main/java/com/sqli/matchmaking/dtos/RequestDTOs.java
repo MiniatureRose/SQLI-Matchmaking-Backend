@@ -4,14 +4,12 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 
-import org.springframework.lang.NonNull;
-
 import lombok.Data;
 
 public final class RequestDTOs {
 
     @Data
-    public static final class Signup {
+    public final class Signup {
         private final String firstName;
         private final String lastName;
         private final String email;
@@ -21,22 +19,17 @@ public final class RequestDTOs {
     }
 
     @Data
-    public static final class Signin {
+    public final class Signin {
         private final String email;
         private final String password;
     }
 
     @Data
-    public static final class Match {
-        private final String name;
-
-        @NonNull
+    public final class Match {
         private final Long organizerId;
-        @NonNull
         private final Long fieldId;
-        @NonNull
         private final Long sportId;
-
+        private final String name;
         private final Instant date;
         private final Duration duration;
         private final Integer noPlayers;
@@ -45,45 +38,38 @@ public final class RequestDTOs {
     }
 
     @Data
-    public static final class MatchUser {
-        @NonNull
+    public final class MatchUser {
         private final Long userId;
-        @NonNull
         private final Long matchId;
     }
 
 
     @Data
-    public static final class TeamRecord {
-        @NonNull
+    public final class TeamRecord {
         private final Long teamId;
-        private final int score;
+        private final Integer score;
     }
 
     @Data
-    public static final class TeamPlayers {
+    public final class TeamPlayers {
         private final String teamName;
         private final List<Long> playersIds;
     }
-
-
     
     @Data
-    public static final class FieldSport {
-        @NonNull
+    public final class FieldSport {
         private final Long fieldId;
-        @NonNull
         private final Long sportId;
     }
 
     @Data
-    public static final class Sport {
+    public final class Sport {
         private final String name;
         private final Integer noTeams;
     }
 
     @Data
-    public static final class Field {
+    public final class Field {
         private final String name;
         private final String location;
         private final Integer noPlayers;

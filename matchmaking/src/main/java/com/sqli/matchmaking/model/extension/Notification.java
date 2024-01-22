@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 import lombok.Builder;
 import java.time.Instant;
 
+import com.sqli.matchmaking.model.standalone.User;
+
 
 
 @Builder
@@ -14,24 +16,24 @@ import java.time.Instant;
 @NoArgsConstructor
 @Data
 @Entity
-@Table(name = "notification")
-
+@Table(name = "notifications")
 public class Notification {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @Column(name = "user_id")
-    private Long userId; 
-
-    private String message; 
+    @ManyToOne()
+    @JoinColumn(name = "user_id")
+    private User user; 
 
     @Column(name = "date_created")
     private Instant dateCreated; 
 
+    @Builder.Default
     @Column(name = "is_read")
-    private boolean isRead;
+    private Boolean isRead = false;
 
+    private String message; 
 
 }

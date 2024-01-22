@@ -33,7 +33,10 @@ public interface MatchUserRepository extends JpaRepository<MatchUser, Long> {
     @Query("SELECT m.user FROM MatchUser m WHERE m.match = :match")
     List<User> findUsersByMatch(@Param("match") Match match); 
 
-    @Query("SELECT mu.match FROM MatchUser mu WHERE mu.user.id = :userId AND mu.match.date >= :startDateOfNextWeek AND mu.match.date <= :endDateOfNextWeek")
-    List<Match> findMatchOfUserForWeek(@Param("userId") Long userId, @Param("startDateOfNextWeek") Instant startDateOfNextWeek, @Param("endDateOfNextWeek") Instant endDateOfNextWeek);
+    @Query("SELECT mu.match FROM MatchUser mu WHERE mu.user = :user AND mu.match.date >= :startDateOfNextWeek AND mu.match.date <= :endDateOfNextWeek")
+    List<Match> findMatchOfUserForWeek(
+        @Param("user") User user, 
+        @Param("startDateOfNextWeek") Instant startDateOfNextWeek, 
+        @Param("endDateOfNextWeek") Instant endDateOfNextWeek);
 
 }

@@ -9,15 +9,15 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.lang.NonNull;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 // dtos
 import com.sqli.matchmaking.dtos.*;
-import com.sqli.matchmaking.model.associative.MatchUser;
-import com.sqli.matchmaking.model.associative.TeamUser;
+// entities
+import com.sqli.matchmaking.model.associative.*;
 import com.sqli.matchmaking.model.extension.*;
 import com.sqli.matchmaking.model.standalone.*;
+// services
 import com.sqli.matchmaking.service.extension.*;
 import com.sqli.matchmaking.service.extension.playerranking.*;
 import com.sqli.matchmaking.service.extension.playerranking.forms.*;
@@ -36,7 +36,9 @@ public class MatchController {
     @Autowired
     private MatchService matchService;
     @Autowired
-    private FieldSportService fieldSportService;
+    private SportService sportService;
+    @Autowired
+    private FieldService fieldService;
     @Autowired
     private UserService userService;
     @Autowired
@@ -47,7 +49,6 @@ public class MatchController {
     private EvenMaking evenMaking;
     @Autowired
     private DefaultRanking defaultRanking;
-
     @Autowired
     private ResponseDTOs responseDTOs;
 
@@ -59,10 +60,10 @@ public class MatchController {
     public ResponseEntity<Object> createMatch(@RequestBody RequestDTOs.Match request) {
         // Check existence of Ids
         User organiser = userService.getById(request.getOrganizerId());
-        Field field = fieldSportService.getFieldById(request.getFieldId());
-        Sport sport = fieldSportService.getSportById(request.getSportId());
+        Field field = fieldService.getById(request.getFieldId());
+        Sport sport = sportService.getById(request.getSportId());
         // check is field does have the sport
-        if (!fieldSportService.isSportInField(field, sport)) {
+        if (!fieldService.isSportInField(field, sport)) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(Map.of("error", "Selected sport cannot be played in selected field"));
         }
@@ -111,8 +112,8 @@ public class MatchController {
     @PostMapping("make/auto")
     @Transactional
     public ResponseEntity<Object> autoMaking(
-        @RequestParam @NonNull Long userId,
-        @RequestParam @NonNull Long matchId,
+        @RequestParam Long userId,
+        @RequestParam Long matchId,
         @RequestParam String model) {
         // Check Ids
         User user = userService.getById(userId);
@@ -135,7 +136,7 @@ public class MatchController {
         }
         // Make match
         matchService.makeTeams(match, service);
-        notificationService.SendTeamsCreatedNotifications(match);
+        notificationService.sendTeamsCreatedNotifications(match);
         // Change status
         matchService.form(match);
         // Confirm
@@ -145,8 +146,8 @@ public class MatchController {
     @PostMapping("make/manual")
     @Transactional
     public ResponseEntity<Object> manualMaking(
-        @RequestParam @NonNull Long userId,
-        @RequestParam @NonNull Long matchId,
+        @RequestParam Long userId,
+        @RequestParam Long matchId,
         @RequestBody List<RequestDTOs.TeamPlayers> manualDTO) {
         // Check Ids
         User user = userService.getById(userId);
@@ -186,7 +187,7 @@ public class MatchController {
     @PostMapping("record")
     @Transactional
     public ResponseEntity<Object> record(
-        @RequestParam @NonNull Long recorderId,
+        @RequestParam Long recorderId,
         @RequestParam String model,
         @RequestBody List<RequestDTOs.TeamRecord> records) {
         // Check Ids
@@ -240,8 +241,8 @@ public class MatchController {
     @PutMapping("confirm")
     @Transactional
     public ResponseEntity<Object> confirm(
-        @RequestParam @NonNull Long userId,
-        @RequestParam @NonNull Long matchId) {
+        @RequestParam Long userId,
+        @RequestParam Long matchId) {
        // Check Ids
         User user = userService.getById(userId);
         Match match = matchService.getById(matchId);
@@ -258,8 +259,8 @@ public class MatchController {
     @PutMapping("close")
     @Transactional
     public ResponseEntity<Object> close(
-        @RequestParam @NonNull Long userId,
-        @RequestParam @NonNull Long matchId) {
+        @RequestParam Long userId,
+        @RequestParam Long matchId) {
         // Check Ids
         User user = userService.getById(userId);
         Match match = matchService.getById(matchId);
@@ -278,8 +279,8 @@ public class MatchController {
     @PutMapping("cancel")
     @Transactional
     public ResponseEntity<Object> cancel(
-        @RequestParam @NonNull Long userId,
-        @RequestParam @NonNull Long matchId) {
+        @RequestParam Long userId,
+        @RequestParam Long matchId) {
        // Check Ids
         User user = userService.getById(userId);
         Match match = matchService.getById(matchId);
@@ -288,32 +289,48 @@ public class MatchController {
         // Check status and cancel
         matchService.cancel(match);
         // Send notification
-        notificationService.SendCanceledMatchNotifications(match);
+        notificationService.sendCanceledMatchNotifications(match);
         // Confirm
         return ResponseEntity.ok().body(Map.of("message", "Match canceled successfully!"));
     }
 
-    @PutMapping("pend")
+    @PutMapping("unclose") // back from CLOSED to PENDING status
     @Transactional
-    public ResponseEntity<Object> pend(
-        @RequestParam @NonNull Long userId,
-        @RequestParam @NonNull Long matchId) {
+    public ResponseEntity<Object> unclose(
+        @RequestParam Long userId,
+        @RequestParam Long matchId) {
         // Check Ids
         User user = userService.getById(userId);
         Match match = matchService.getById(matchId);
         // Check authorities
         userService.onlyOrganizerAndAdmin(user, match);
-        // Check match is not pending
-        matchService.assertMatchStatus(match, Match.PENDING, false);
-        // Delete teams
-        teamService.deleteMatchTeams(match);
+        // Check match is closed
+        matchService.assertMatchStatus(match, Match.CLOSED, true);
         // Change status
         matchService.pend(match);
         // Confirm
         return ResponseEntity.ok().body(Map.of("message", "Match is back pending successfully!"));
     }
 
-    
+    @PutMapping("unconfirm")  // back from CONFIRMED to FORMED status
+    @Transactional
+    public ResponseEntity<Object> unconfirm(
+        @RequestParam Long userId,
+        @RequestParam Long matchId) {
+        // Check Ids
+        User user = userService.getById(userId);
+        Match match = matchService.getById(matchId);
+        // Check authorities
+        userService.onlyOrganizerAndAdmin(user, match);
+        // Check match is formed
+        matchService.assertMatchStatus(match, Match.CONFIRMED, true);
+        // Change status
+        matchService.form(match);
+        // Confirm
+        return ResponseEntity.ok().body(Map.of("message", "Match is back pending successfully!"));
+    }
+
+
 
     /*
      * DELETE
@@ -321,8 +338,8 @@ public class MatchController {
     @DeleteMapping("uncreate")
     @Transactional
     public ResponseEntity<Object> deleteMatch(        
-        @RequestParam @NonNull Long userId,
-        @RequestParam @NonNull Long matchId) {
+        @RequestParam Long userId,
+        @RequestParam Long matchId) {
         // Check Ids
         User user = userService.getById(userId);
         Match match = matchService.getById(matchId);
@@ -337,8 +354,8 @@ public class MatchController {
     @DeleteMapping("unjoin")
     @Transactional
     public ResponseEntity<Object> deleteMatchUser(
-        @RequestParam @NonNull Long userId,
-        @RequestParam @NonNull Long matchId) {
+        @RequestParam Long userId,
+        @RequestParam Long matchId) {
         // Check Ids
         User player = userService.getById(userId);
         Match match = matchService.getById(matchId);
@@ -352,6 +369,26 @@ public class MatchController {
         return ResponseEntity.ok().body(Map.of("message", "Player unjoined successfully!"));
     }
 
+    @DeleteMapping("unmake")  // back from FORMED to CLOSED status
+    @Transactional
+    public ResponseEntity<Object> unmake(
+        @RequestParam Long userId,
+        @RequestParam Long matchId) {
+        // Check Ids
+        User user = userService.getById(userId);
+        Match match = matchService.getById(matchId);
+        // Check authorities
+        userService.onlyOrganizerAndAdmin(user, match);
+        // Check match is formed
+        matchService.assertMatchStatus(match, Match.FORMED, true);
+        // Delete teams
+        teamService.deleteMatchTeams(match);
+        // Change status
+        matchService.close(match);
+        // Confirm
+        return ResponseEntity.ok().body(Map.of("message", "Match is back pending successfully!"));
+    }
+
 
 
     /*
@@ -359,7 +396,7 @@ public class MatchController {
      */
     @GetMapping("players")
     public ResponseEntity<List<ResponseDTOs.UserDetails>> getMatchPlayers(
-        @RequestParam @NonNull Long matchId) {
+        @RequestParam Long matchId) {
         // Check id
         Match match = matchService.getById(matchId);
         // Return
@@ -371,7 +408,7 @@ public class MatchController {
 
     @GetMapping("teams")
     public ResponseEntity<List<ResponseDTOs.TeamDetails>> getMatchTeams(
-        @RequestParam @NonNull Long matchId) {
+        @RequestParam Long matchId) {
         // Check id
         Match match = matchService.getById(matchId);
         // Return
@@ -384,11 +421,9 @@ public class MatchController {
 
     @GetMapping("id")
     public ResponseEntity<ResponseDTOs.MatchDetails> getMatchById(
-        @RequestParam @NonNull Long matchId) {
+        @RequestParam Long matchId) {
         // Check id
         Match match = matchService.getById(matchId);
-        // Set current players
-        matchService.setCureentPlayers(match);
         // Return
         return ResponseEntity.ok(responseDTOs.new MatchDetails(match));
     }
@@ -423,11 +458,11 @@ public class MatchController {
         if (filter != null && id != null) {
             switch (filter) {
                 case "sport":
-                    Sport sport = fieldSportService.getSportById(id);
+                    Sport sport = sportService.getById(id);
                     matchService.filterMatchesBySport(all, sport);
                     break;
                 case "field":
-                    Field field = fieldSportService.getFieldById(id);
+                    Field field = fieldService.getById(id);
                     matchService.filterMatchesByField(all, field);
                     break;
                 default:
@@ -439,8 +474,6 @@ public class MatchController {
         }
         // Filter by time
         filterByTime(all, type);
-        // Set current players
-        matchService.setCureentPlayers(all);
         // Return
         List<ResponseDTOs.MatchDetails> ret = all.stream()
             .map(m -> responseDTOs.new MatchDetails(m))

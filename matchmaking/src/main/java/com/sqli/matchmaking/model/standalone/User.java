@@ -1,13 +1,9 @@
 package com.sqli.matchmaking.model.standalone;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
 import jakarta.persistence.*;
 import lombok.Data;
-import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 
 @Builder
@@ -20,6 +16,10 @@ import lombok.Builder;
     @UniqueConstraint(columnNames = {"first_name", "last_name"})
 })
 public final class User {
+
+    // roles
+    private static final String ADMIN = "ADMIN";
+    private static final String USER = "USER";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -47,11 +47,10 @@ public final class User {
     @Column(name = "profile_image")
     private String profileImage;
 
-    private static final String ADMIN = "ADMIN";
-    private static final String USER = "USER";
-
     @Column(name = "role")
     private String role;
+
+
 
     public Boolean isAdmin() {
         return this.role.equals(ADMIN);
@@ -61,22 +60,4 @@ public final class User {
         return this.role.equals(USER);
     }
 
-    public static byte[] getImageBytes(String imagePath) throws Exception {
-        Path path = Paths.get(imagePath);
-        return Files.readAllBytes(path);
-    }
-
 }
-
-
-
-    /*
-    @Lob
-    @Column(name = "profile_image", columnDefinition = "BLOB")
-    private byte[] profileImage;
-
-    public void setImageFromPath(String path) throws Exception {
-        byte[] imageBytes = getImageBytes(path);
-        this.setProfileImage(imageBytes);
-    }
-    */
