@@ -30,7 +30,7 @@ public final class ResponseDTOs {
         private final String lastName;
         private final String email;
         private final String phone;
-        private final Double rank;
+        private final Integer rank;
         private final String profileImage;
         private final String role;
     

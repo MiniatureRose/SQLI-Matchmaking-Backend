@@ -9,7 +9,7 @@ import lombok.Data;
 public final class RequestDTOs {
 
     @Data
-    public final class Signup {
+    public static final class Signup {
         private final String firstName;
         private final String lastName;
         private final String email;
@@ -19,13 +19,13 @@ public final class RequestDTOs {
     }
 
     @Data
-    public final class Signin {
+    public static final class Signin {
         private final String email;
         private final String password;
     }
 
     @Data
-    public final class Match {
+    public static final class Match {
         private final Long organizerId;
         private final Long fieldId;
         private final Long sportId;
@@ -38,38 +38,38 @@ public final class RequestDTOs {
     }
 
     @Data
-    public final class MatchUser {
+    public static final class MatchUser {
         private final Long userId;
         private final Long matchId;
     }
 
 
     @Data
-    public final class TeamRecord {
+    public static final class TeamRecord {
         private final Long teamId;
         private final Integer score;
     }
 
     @Data
-    public final class TeamPlayers {
+    public static final class TeamPlayers {
         private final String teamName;
         private final List<Long> playersIds;
     }
     
     @Data
-    public final class FieldSport {
+    public static final class FieldSport {
         private final Long fieldId;
         private final Long sportId;
     }
 
     @Data
-    public final class Sport {
+    public static final class Sport {
         private final String name;
         private final Integer noTeams;
     }
 
     @Data
-    public final class Field {
+    public static final class Field {
         private final String name;
         private final String location;
         private final Integer noPlayers;

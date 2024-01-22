@@ -424,7 +424,7 @@ public class MatchController {
         @RequestParam Long matchId) {
         // Check id
         Match match = matchService.getById(matchId);
-        // Return
+        // Return 
         return ResponseEntity.ok(responseDTOs.new MatchDetails(match));
     }
 

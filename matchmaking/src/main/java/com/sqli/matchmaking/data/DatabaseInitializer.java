@@ -103,7 +103,7 @@ public class DatabaseInitializer implements ApplicationRunner {
                         .phone("0123456789")
                         .profileImage("/assets/Player6.svg")
                         .role("USER")
-                        .rank(500.)
+                        .rank(500)
                         .build(),
                 User.builder().firstName("Mouad")
                         .lastName("Boumour")
@@ -112,7 +112,7 @@ public class DatabaseInitializer implements ApplicationRunner {
                         .phone("0123456789")
                         .profileImage("/assets/Player2.svg")
                         .role("ADMIN")
-                        .rank(940.)
+                        .rank(940)
                         .build(),
                 User.builder().firstName("Salim")
                         .lastName("Bekkari")

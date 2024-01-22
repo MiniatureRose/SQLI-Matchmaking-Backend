@@ -42,7 +42,7 @@ public final class User {
 
     @Builder.Default
     @Column(name = "ranking")
-    private Double rank = 1000.;
+    private Integer rank = 1000;
 
     @Column(name = "profile_image")
     private String profileImage;

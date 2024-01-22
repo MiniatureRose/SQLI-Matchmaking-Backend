@@ -55,7 +55,7 @@ public class UserController {
     public ResponseEntity<Object> setRank(
         @RequestParam @NonNull Long adminId,
         @RequestParam @NonNull Long playerId,
-        @RequestParam @NonNull Double newRank) {
+        @RequestParam @NonNull Integer newRank) {
         // Check ids
         User admin = userService.getById(adminId);
         User player = userService.getById(playerId);

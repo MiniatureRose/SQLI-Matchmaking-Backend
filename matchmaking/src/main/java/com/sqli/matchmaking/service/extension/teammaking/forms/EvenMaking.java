@@ -28,19 +28,28 @@ public class EvenMaking implements TeamMaking {
     public void make(List<User> players, List<Team> teams) {
 
         // Map players by rank
-        List<Double> ranks = players.stream().map(User::getRank).collect(Collectors.toList());
+        List<Double> ranks = players.stream()
+                            .map(User::getRank)
+                            .mapToDouble(Integer::doubleValue)  // Convert Integer to double
+                            .boxed()  // Box the primitive double back to Double
+                            .collect(Collectors.toList());
         // Calculate the number of teams
         int noTeams = teams.size();
         // Find the best partition
         EvenPartition bestPartition = new EvenPartition(ranks, noTeams);
-        List<List<Double>> ret = bestPartition.getResult();
+        List<List<Integer>> ret = bestPartition.getResult()
+                            .stream()
+                            .map(innerList -> innerList.stream()
+                            .map(Double::intValue) // Convert Double to Integer
+                            .collect(Collectors.toList())) // Collect as List<Integer>
+                            .collect(Collectors.toList()); // Collect as List<List<Integer>>;
 
         // Copy players 
         List<User> playersClone = new ArrayList<>(players);
 
         assert ret.size() == noTeams : "WEIRD : bestPartition is not of size teams";
         for (int i = 0; i < noTeams; i++) {
-            for (Double rank : ret.get(i)) {
+            for (Integer rank : ret.get(i)) {
                 User player = findPlayerByRank(rank, playersClone);
                 // Add player to team
                 TeamUser el = TeamUser.builder()
@@ -53,10 +62,9 @@ public class EvenMaking implements TeamMaking {
                 }    
             }
         }
-        
     }
 
-    private User findPlayerByRank(Double rank, List<User> players) {
+    private User findPlayerByRank(Integer rank, List<User> players) {
         for (User player : players) {
             if (player.getRank().equals(rank)) {
                 // Remove player 

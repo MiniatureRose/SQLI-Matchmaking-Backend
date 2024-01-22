@@ -73,7 +73,7 @@ public class UserService {
     }
 
     @Transactional
-    public void updateRank(User user, Double newRank) {
+    public void updateRank(User user, Integer newRank) {
         try {
             user.setRank(newRank);
         } catch (DataIntegrityViolationException e) {

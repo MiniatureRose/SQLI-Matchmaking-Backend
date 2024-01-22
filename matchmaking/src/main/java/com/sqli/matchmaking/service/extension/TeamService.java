@@ -65,12 +65,32 @@ public class TeamService {
      */
     public Double getAverageRank(Team team) {
         List<User> players = this.getTeamPlayers(team);
-        List<Double> ranks = players.stream().map(User::getRank).collect(Collectors.toList());
+        List<Integer> ranks = players.stream().map(User::getRank).collect(Collectors.toList());
         Double average = ranks.stream()
+                              .mapToInt(Integer::intValue)
+                              .average()
+                              .orElse(0.0);
+        return average;
+    }
+
+    public Double getVsAverageRank(Team team) {
+        List<Team> vsTeams = this.getVsTeam(team);
+        List<Double> ranks = vsTeams.stream().map(t -> getAverageRank(t)).collect(Collectors.toList());
+        double average = ranks.stream()
                               .mapToDouble(Double::doubleValue)
                               .average()
                               .orElse(0.0);
         return average;
+    }
+
+    public Integer getVsAverageScore(Team team) {
+        List<Team> vsTeams = this.getVsTeam(team);
+        List<Integer> scores = vsTeams.stream().map(Team::getScore).collect(Collectors.toList());
+        double average = scores.stream()
+                               .mapToInt(Integer::intValue)
+                               .average()
+                               .orElse(0.0);
+        return (int) average; // Convert double to Integer
     }
 
     public void rankPlayers(Match match, PlayerRanking service) {
@@ -126,6 +146,13 @@ public class TeamService {
     public List<User> getTeamPlayers(Team team) {
         return teamUserRepository.findUsersByTeam(team);
     }
+
+    public List<Team> getVsTeam(Team team) {
+        List<Team> all = this.getMatchTeams(team.getMatch());
+        all.remove(team);
+        return all;
+    }
+
 
 
     /* 
