@@ -1,4 +1,4 @@
-/* 
+
 package com.sqli.matchmaking.service.extension.playerranking.forms;
 
 import java.util.List;
@@ -63,4 +63,3 @@ public class DefaultRanking implements PlayerRanking {
     }
 
 }
-*/

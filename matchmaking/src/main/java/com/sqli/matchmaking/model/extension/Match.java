@@ -1,6 +1,7 @@
 package com.sqli.matchmaking.model.extension;
 
 import java.time.Instant;
+import java.util.List;
 import java.time.Duration;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -31,6 +32,10 @@ public final class Match {
     public static final String CLOSED = "CLOSED";
     public static final String PENDING = "PENDING";
     public static final String CANCELED = "CANCELED";
+
+    public static final List<String> ALL_STATUS = List.of(
+        PENDING, CLOSED, FORMED, CONFIRMED, RECORDED, CANCELED
+    );
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

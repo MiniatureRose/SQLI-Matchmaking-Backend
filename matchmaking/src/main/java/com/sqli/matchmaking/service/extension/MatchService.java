@@ -95,6 +95,10 @@ public class MatchService {
     /* 
      * Filtering
      */
+    public void filterMatchesByStatus(List<Match> all, String status, Boolean bool) {
+        all.removeIf(match -> match.getStatus().equals(status) != bool);
+    }
+    
     public void filterMatchesBySport(List<Match> matches, Sport sport) {
         matches.removeIf(match -> !match.getSport().equals(sport));
     }

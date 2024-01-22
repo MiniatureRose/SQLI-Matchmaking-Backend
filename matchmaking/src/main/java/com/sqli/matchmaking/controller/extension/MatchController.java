@@ -390,7 +390,7 @@ public class MatchController {
     }
 
 
-    
+
     /*
      * GET
      */
@@ -428,13 +428,15 @@ public class MatchController {
         return ResponseEntity.ok(responseDTOs.new MatchDetails(match));
     }
 
-    @GetMapping("")
+    @GetMapping()
     public ResponseEntity<List<ResponseDTOs.MatchDetails>> geMatches(
             @RequestParam String type,
             @RequestParam(required = false) Long userId,
             @RequestParam(required = false) Boolean myMatches,
-            @RequestParam(required = false) Long id,
-            @RequestParam(required = false) String filter) {
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) Boolean statusBool,
+            @RequestParam(required = false) String filter,
+            @RequestParam(required = false) Long filterId) {
 
         if (!isValidTime(type)) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -455,21 +457,35 @@ public class MatchController {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        if (filter != null && id != null) {
+        if (status != null && statusBool != null) {
+            if (!Match.ALL_STATUS.contains(status)) {
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            }
+            matchService.filterMatchesByStatus(all, status, statusBool);
+        }
+        else if (status != null || statusBool != null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        else { // Default
+            matchService.filterMatchesByStatus(all, Match.CANCELED, false);
+        }
+
+
+        if (filter != null && filterId != null) {
             switch (filter) {
                 case "sport":
-                    Sport sport = sportService.getById(id);
+                    Sport sport = sportService.getById(filterId);
                     matchService.filterMatchesBySport(all, sport);
                     break;
                 case "field":
-                    Field field = fieldService.getById(id);
+                    Field field = fieldService.getById(filterId);
                     matchService.filterMatchesByField(all, field);
                     break;
                 default:
                     return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
             }
         }
-        else if (filter != null || id != null) {
+        else if (filter != null || filterId != null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         // Filter by time
