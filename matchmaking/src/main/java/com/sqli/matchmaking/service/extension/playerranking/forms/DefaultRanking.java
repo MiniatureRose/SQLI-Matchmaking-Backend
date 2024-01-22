@@ -1,3 +1,4 @@
+/* 
 package com.sqli.matchmaking.service.extension.playerranking.forms;
 
 import java.util.List;
@@ -21,6 +22,9 @@ public class DefaultRanking implements PlayerRanking {
     private UserService userService;
 
     private final Integer GAIN = 50;
+    private final List<Integer> SIGMA = List.of(
+        0, 5, 10, 14, 18, 21, 24, 26, 28, 29, 30
+    );
 
 
     @Transactional
@@ -32,7 +36,8 @@ public class DefaultRanking implements PlayerRanking {
             for (User player : players) {
                 Double evo1 = 0.2*(vsAverageRank - averageRank);
                 Double evo2 = 0.2*(vsAverageRank - player.getRank());
-                Integer evo3 = team.getScore() - teamService.getVsAverageScore(team);
+                Integer scoreDiff = team.getScore() - teamService.getVsAverageScore(team);
+                Integer evo3 = this.sigma(scoreDiff);
                 Double evo = evo1 + evo2 + evo3;
                 if (teamService.isWinner(team)) {
                     Double diff = GAIN + evo;
@@ -48,4 +53,14 @@ public class DefaultRanking implements PlayerRanking {
         }
     }
 
+
+    private Integer sigma(Integer x) {
+        int n = SIGMA.size();
+        int sign = x > 0 ? 1 : -1;
+        int idx = Math.abs(x);
+        int image = idx < n ? SIGMA.get(idx) : SIGMA.get(n - 1);
+        return sign * image;
+    }
+
 }
+*/
