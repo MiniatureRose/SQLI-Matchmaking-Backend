@@ -187,4 +187,10 @@ public class NotificationService {
         return el;
     }
 
+    public static String FormatDate(Instant instant) {
+        LocalDateTime localDateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEEE 'à' HH'h'", Locale.FRENCH);
+        return localDateTime.format(formatter);
+    }
+
 }
