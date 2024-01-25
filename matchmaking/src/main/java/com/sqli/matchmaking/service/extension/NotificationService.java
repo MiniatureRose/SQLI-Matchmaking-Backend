@@ -1,6 +1,5 @@
 package com.sqli.matchmaking.service.extension;
 
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -60,10 +59,10 @@ public class NotificationService {
         List<Match> upcomingMatches = matchRepository.findByDateBetween(now, in24Hours);
 
         for (Match match : upcomingMatches) {
-            if(!Notifyedupcomingmatches.contains(match) && match.getStatus() != "CANCELED"){
+            if(!Notifyedupcomingmatches.contains(match) && match.getStatus() != Match.CANCELED){
                 List<User> usersToNotify = this.matchService.getMatchPlayers(match);
                 for (User user : usersToNotify) {
-                    String message = "Ton prochain match du "+FormatDate(match.getDate())+" commence dans moins de 24 heures.";
+                    String message = "Ton prochain match du " + formatDate(match.getDate()) + " commence dans moins de 24 heures.";
                     Notification el = this.create(user, message, Instant.now());
                     this.save(el);
                 }
@@ -75,7 +74,7 @@ public class NotificationService {
     public void sendCanceledMatchNotifications(Match match){
         List<User> usersToNotify = this.matchService.getMatchPlayers(match);
         for (User user : usersToNotify) {
-            String message = "Le match du " + FormatDate(match.getDate()) + " est annulé.";
+            String message = "Le match du " + formatDate(match.getDate()) + " est annulé.";
             Notification el = this.create(user, message, Instant.now());
             this.save(el);
             }
@@ -84,14 +83,14 @@ public class NotificationService {
     public void sendTeamsCreatedNotifications(Match match){
         List<User> usersToNotify = this.matchService.getMatchPlayers(match);
             for (User user : usersToNotify) {
-                String message = "Les equipes pour le match du " + FormatDate(match.getDate()) + " sont crées.";
+                String message = "Les equipes pour le match du " + formatDate(match.getDate()) + " sont crées.";
                 Notification el = this.create(user, message, Instant.now());
                 this.save(el);
             }
     }
 
     public void sendKickedOutNotifications(User user, Match match){
-        String message = "Vous avez été retiré du match du " + FormatDate(match.getDate());
+        String message = "Vous avez été retiré du match du " + formatDate(match.getDate());
         Notification el = this.create(user, message, Instant.now());
         this.save(el);
     }
@@ -101,7 +100,8 @@ public class NotificationService {
         List<User> allUsers = userService.getAll();
         allUsers.forEach(user -> {
             if (!isPlayingNextWeek(user)) {
-                String message = user.getFirstName()+", ne manquez pas les matches de la semaine prochaine ! Inscrivez-vous dès maintenant";
+                String message = user.getFirstName() + 
+                ", ne manquez pas les matches de la semaine prochaine ! Inscrivez-vous dès maintenant";
                 Notification el = this.create(user, message, Instant.now());
                 this.save(el);
             }
@@ -187,7 +187,7 @@ public class NotificationService {
         return el;
     }
 
-    public static String FormatDate(Instant instant) {
+    private String formatDate(Instant instant) {
         LocalDateTime localDateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEEE 'à' HH'h'", Locale.FRENCH);
         return localDateTime.format(formatter);

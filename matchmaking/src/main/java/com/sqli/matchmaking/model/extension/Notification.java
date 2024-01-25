@@ -34,6 +34,7 @@ public class Notification {
     @Column(name = "is_read")
     private Boolean isRead = false;
 
+    @Column(name = "message")
     private String message; 
 
 }
